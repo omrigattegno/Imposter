@@ -1,0 +1,175 @@
+/* Avatar motion. Root classes (on the <svg>): .avatar--bob | --wiggle | --jump | --shake, plus
+   .avatar--<mood>. Inner classes: .av-lid (idle blink), .av-mask / .av-mask--off (mask drop).
+   Everything is switched off under prefers-reduced-motion (the mask then simply vanishes). */
+.avatar {
+  display: inline-block;
+  vertical-align: middle;
+  flex: none;
+  overflow: visible; /* the dropped mask falls past the frame for a moment */
+}
+.avatar--bob,
+.avatar--wiggle,
+.avatar--jump,
+.avatar--shake {
+  will-change: transform;
+}
+
+/* Idle blink: the lid grows down over the eye for ~110 ms every few seconds; phase and period are
+   per instance (--av-blink-delay / --av-blink-dur set by <Avatar>) so a row never blinks in sync. */
+.av-lid {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  transform: scaleY(0);
+  animation: av-blink var(--av-blink-dur, 4.4s) linear var(--av-blink-delay, 0s) infinite;
+}
+@keyframes av-blink {
+  0%,
+  93% {
+    transform: scaleY(0);
+  }
+  95.5%,
+  97.5% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(0);
+  }
+}
+
+/* Mask-off: tilts, slides down off the face and fades. Played once on false -> true of `unmasked`;
+   <Avatar> removes the group from the DOM once it is over. */
+.av-mask {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+.av-mask--off {
+  animation: av-mask-off 600ms var(--ease-bounce, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards;
+}
+@keyframes av-mask-off {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  35% {
+    transform: translate(3px, 8px) rotate(-14deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(8px, 64px) rotate(-30deg);
+    opacity: 0;
+  }
+}
+
+/* Whole-character animations, all looping so screens just set `animate` and forget. */
+.avatar--bob {
+  animation: av-bob 2.8s ease-in-out infinite;
+}
+@keyframes av-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6%);
+  }
+}
+
+.avatar--wiggle {
+  transform-origin: 50% 100%;
+  animation: av-wiggle 1.8s ease-in-out infinite;
+}
+@keyframes av-wiggle {
+  0%,
+  60%,
+  100% {
+    transform: rotate(0deg);
+  }
+  10% {
+    transform: rotate(-9deg);
+  }
+  20% {
+    transform: rotate(9deg);
+  }
+  30% {
+    transform: rotate(-6deg);
+  }
+  40% {
+    transform: rotate(6deg);
+  }
+  50% {
+    transform: rotate(-3deg);
+  }
+}
+
+.avatar--jump {
+  transform-origin: 50% 100%;
+  animation: av-jump 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+@keyframes av-jump {
+  0%,
+  70%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  10% {
+    transform: translateY(3%) scale(1.08, 0.9);
+  }
+  35% {
+    transform: translateY(-24%) scale(0.95, 1.06);
+  }
+  55% {
+    transform: translateY(0) scale(1.06, 0.92);
+  }
+}
+
+.avatar--shake {
+  animation: av-shake 1.6s ease-in-out infinite;
+}
+@keyframes av-shake {
+  0%,
+  45%,
+  100% {
+    transform: translateX(0);
+  }
+  5% {
+    transform: translateX(-6%);
+  }
+  10% {
+    transform: translateX(6%);
+  }
+  15% {
+    transform: translateX(-5%);
+  }
+  20% {
+    transform: translateX(5%);
+  }
+  25% {
+    transform: translateX(-4%);
+  }
+  30% {
+    transform: translateX(4%);
+  }
+  35% {
+    transform: translateX(-2%);
+  }
+  40% {
+    transform: translateX(2%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar--bob,
+  .avatar--wiggle,
+  .avatar--jump,
+  .avatar--shake {
+    animation: none;
+    will-change: auto;
+  }
+  .av-lid {
+    animation: none;
+  }
+  .av-mask--off {
+    animation: none;
+    opacity: 0;
+  }
+}

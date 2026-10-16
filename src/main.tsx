@@ -8,6 +8,7 @@ import { NavProvider } from './nav';
 import { registerPWA } from './lib/pwa';
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/motion.css';
 
 registerPWA();
 

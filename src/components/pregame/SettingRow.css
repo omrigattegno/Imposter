@@ -1,0 +1,47 @@
+/* Settings row as a soft card. Values shared with pregame.css's .srow rules are identical on purpose. */
+.srow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.18);
+}
+.srow__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.srow__label {
+  font-weight: 800;
+  font-size: var(--fs-m);
+  letter-spacing: -0.01em;
+}
+.srow__hint {
+  color: var(--text-muted);
+  font-size: var(--fs-s);
+  line-height: 1.35;
+}
+.srow__control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.srow__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--accent-2);
+  font-size: var(--fs-s);
+  font-weight: 600;
+}
+.srow__status-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 22%, transparent);
+}

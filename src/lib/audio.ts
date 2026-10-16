@@ -10,6 +10,8 @@
  *                'end'  = three short tones when the timer hits zero.
  *    Both are no-ops until unlockAudio() has run, or when WebAudio is unsupported.
  *  - vibrate(pattern): navigator.vibrate when available (Android; iOS ignores it).
+ *  - getAudioContext(): the shared, unlocked context (or null before unlockAudio() ran / after it closed).
+ *    sfx.ts schedules its synthesized cues on it; nothing else should create a second context.
  */
 
 type AudioContextCtor = typeof AudioContext;
@@ -54,6 +56,15 @@ export function unlockAudio(): void {
     unlocked = true;
   } catch {
     /* audio is a nicety; never break the game */
+  }
+}
+
+/** The shared context once unlockAudio() ran inside a gesture; null until then or once closed. */
+export function getAudioContext(): AudioContext | null {
+  try {
+    return unlocked && ctx && ctx.state !== 'closed' ? ctx : null;
+  } catch {
+    return null;
   }
 }
 

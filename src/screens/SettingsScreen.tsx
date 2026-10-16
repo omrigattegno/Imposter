@@ -1,7 +1,8 @@
 /**
- * Settings: every row of the brief's Settings table (all via UPDATE_SETTINGS) plus custom word packs.
- * Opened from Setup or Results; Back pops to whichever opened it (falling back to Setup, or to the
- * game screen while a round is in progress, when the stack is empty after a refresh).
+ * Settings: every row of the brief's Settings table (all via UPDATE_SETTINGS) in three groups (round
+ * rules, words, phone and app) plus custom word packs. Opened from Setup or Results; Back pops to
+ * whichever opened it (falling back to Setup, or to the game screen while a round is in progress,
+ * when the stack is empty after a refresh).
  */
 import { Button } from '../components/Button';
 import { Segmented } from '../components/Segmented';
@@ -13,6 +14,7 @@ import { OnOffSwitch, SettingRow } from '../components/pregame/SettingRow';
 import { useGame } from '../game/store';
 import type { Difficulty, Lang, Penalty, RevealMethod, Settings, WordLanguage } from '../game/types';
 import { useT, type MessageKey } from '../i18n';
+import { unlockAudio } from '../lib/audio';
 import { requestSensorPermission, useSensorPermission, type SensorPermission } from '../lib/sensors';
 import { useNav } from '../nav';
 import '../styles/pregame.css';
@@ -37,141 +39,178 @@ export function SettingsScreen() {
   const goBack = () => back(fallback);
 
   return (
-    <main className="screen settings" data-testid="settings-screen">
+    <main className="screen settings anim-screen-enter" data-testid="settings-screen">
       <TopBar leading={<BackButton onClick={goBack} testId="settings-back-top" />} title={t('common.settings')} />
 
       {state.phase !== 'setup' && (
-        <div className="notice settings__note" role="status">
+        <div className="notice settings__note anim-slide-up" role="status">
           {t('settings.nextRoundNote')}
         </div>
       )}
 
       <div className="settings__list">
-        <SettingRow label={t('settings.imposters')} hint={t('settings.impostersHint')}>
-          <Segmented<1 | 2>
-            aria-label={t('settings.imposters')}
-            testId="settings-imposters"
-            value={s.imposterCount}
-            options={[
-              { value: 1, label: '1' },
-              { value: 2, label: '2' },
-            ]}
-            onChange={(imposterCount) => patch({ imposterCount })}
-          />
-        </SettingRow>
+        <section className="settings__group" aria-labelledby="settings-group-rules">
+          <h2 id="settings-group-rules" className="settings__groupTitle">
+            <span className="settings__groupDot settings__groupDot--rules" aria-hidden="true" />
+            {t('settings.group.rules')}
+          </h2>
+          <div className="settings__rows stagger stagger--auto">
+            <SettingRow className="anim-slide-up" label={t('settings.imposters')} hint={t('settings.impostersHint')}>
+              <Segmented<1 | 2>
+                aria-label={t('settings.imposters')}
+                testId="settings-imposters"
+                value={s.imposterCount}
+                options={[
+                  { value: 1, label: '1' },
+                  { value: 2, label: '2' },
+                ]}
+                onChange={(imposterCount) => patch({ imposterCount })}
+              />
+            </SettingRow>
 
-        <SettingRow label={t('settings.clueRounds')} hint={t('settings.clueRoundsHint')}>
-          <Segmented<1 | 2 | 3>
-            aria-label={t('settings.clueRounds')}
-            testId="settings-clue-rounds"
-            value={s.clueRounds}
-            options={[
-              { value: 1, label: '1' },
-              { value: 2, label: '2' },
-              { value: 3, label: '3' },
-            ]}
-            onChange={(clueRounds) => patch({ clueRounds })}
-          />
-        </SettingRow>
+            <SettingRow className="anim-slide-up" label={t('settings.clueRounds')} hint={t('settings.clueRoundsHint')}>
+              <Segmented<1 | 2 | 3>
+                aria-label={t('settings.clueRounds')}
+                testId="settings-clue-rounds"
+                value={s.clueRounds}
+                options={[
+                  { value: 1, label: '1' },
+                  { value: 2, label: '2' },
+                  { value: 3, label: '3' },
+                ]}
+                onChange={(clueRounds) => patch({ clueRounds })}
+              />
+            </SettingRow>
 
-        <SettingRow label={t('settings.discussion')} hint={t('settings.discussionHint')} className="srow--dense">
-          <Segmented<number>
-            aria-label={t('settings.discussion')}
-            testId="settings-discussion"
-            value={s.discussionSeconds}
-            options={DISCUSSION_OPTIONS.map((sec) => ({ value: sec, label: sec === 0 ? t('common.off') : String(sec) }))}
-            onChange={(discussionSeconds) => patch({ discussionSeconds })}
-          />
-        </SettingRow>
+            <SettingRow className="anim-slide-up srow--dense" label={t('settings.discussion')} hint={t('settings.discussionHint')}>
+              <Segmented<number>
+                aria-label={t('settings.discussion')}
+                testId="settings-discussion"
+                value={s.discussionSeconds}
+                options={DISCUSSION_OPTIONS.map((sec) => ({ value: sec, label: sec === 0 ? t('common.off') : String(sec) }))}
+                onChange={(discussionSeconds) => patch({ discussionSeconds })}
+              />
+            </SettingRow>
 
-        <SettingRow label={t('settings.imposterSeesCategory')} hint={t('settings.imposterSeesCategoryHint')}>
-          <OnOffSwitch
-            aria-label={t('settings.imposterSeesCategory')}
-            value={s.imposterSeesCategory}
-            onChange={(imposterSeesCategory) => patch({ imposterSeesCategory })}
-          />
-        </SettingRow>
+            <SettingRow className="anim-slide-up" label={t('settings.imposterSeesCategory')} hint={t('settings.imposterSeesCategoryHint')}>
+              <OnOffSwitch
+                aria-label={t('settings.imposterSeesCategory')}
+                value={s.imposterSeesCategory}
+                onChange={(imposterSeesCategory) => patch({ imposterSeesCategory })}
+              />
+            </SettingRow>
 
-        <SettingRow label={t('settings.imposterGuess')} hint={t('settings.imposterGuessHint')}>
-          <OnOffSwitch
-            aria-label={t('settings.imposterGuess')}
-            value={s.imposterGuess}
-            onChange={(imposterGuess) => patch({ imposterGuess })}
-          />
-        </SettingRow>
+            <SettingRow className="anim-slide-up" label={t('settings.imposterGuess')} hint={t('settings.imposterGuessHint')}>
+              <OnOffSwitch
+                aria-label={t('settings.imposterGuess')}
+                value={s.imposterGuess}
+                onChange={(imposterGuess) => patch({ imposterGuess })}
+              />
+            </SettingRow>
 
-        <SettingRow label={t('settings.revealMethod')} status={t(SENSOR_STATUS[permission])}>
-          <Segmented<RevealMethod>
-            aria-label={t('settings.revealMethod')}
-            testId="settings-reveal"
-            value={s.revealMethod}
-            options={[
-              { value: 'lift', label: t('settings.reveal.lift') },
-              { value: 'hold', label: t('settings.reveal.hold') },
-            ]}
-            onChange={(revealMethod) => {
-              patch({ revealMethod });
-              // Still inside the tap: iOS grants sensor access only from a user gesture, and the status
-              // line below updates right away. Setup's Start button asks again if this was skipped.
-              if (revealMethod === 'lift') void requestSensorPermission();
-            }}
-          />
-        </SettingRow>
+            <SettingRow className="anim-slide-up" label={t('settings.penalty')} hint={t('settings.penaltyHint')}>
+              <Segmented<Penalty>
+                aria-label={t('settings.penalty')}
+                testId="settings-penalty"
+                value={s.penalty}
+                options={[
+                  { value: 'off', label: t('common.off') },
+                  { value: 'dare', label: t('settings.penalty.dare') },
+                  { value: 'drink', label: t('settings.penalty.drink') },
+                ]}
+                onChange={(penalty) => patch({ penalty })}
+              />
+            </SettingRow>
+          </div>
+        </section>
 
-        <SettingRow label={t('settings.difficulty')}>
-          <Segmented<Difficulty>
-            aria-label={t('settings.difficulty')}
-            testId="settings-difficulty"
-            value={s.difficulty}
-            options={[
-              { value: 'easy', label: t('settings.difficulty.easy') },
-              { value: 'normal', label: t('settings.difficulty.normal') },
-              { value: 'hard', label: t('settings.difficulty.hard') },
-            ]}
-            onChange={(difficulty) => patch({ difficulty })}
-          />
-        </SettingRow>
+        <section className="settings__group" aria-labelledby="settings-group-words">
+          <h2 id="settings-group-words" className="settings__groupTitle">
+            <span className="settings__groupDot settings__groupDot--words" aria-hidden="true" />
+            {t('settings.group.words')}
+          </h2>
+          <div className="settings__rows stagger stagger--auto">
+            <SettingRow className="anim-slide-up" label={t('settings.difficulty')}>
+              <Segmented<Difficulty>
+                aria-label={t('settings.difficulty')}
+                testId="settings-difficulty"
+                value={s.difficulty}
+                options={[
+                  { value: 'easy', label: t('settings.difficulty.easy') },
+                  { value: 'normal', label: t('settings.difficulty.normal') },
+                  { value: 'hard', label: t('settings.difficulty.hard') },
+                ]}
+                onChange={(difficulty) => patch({ difficulty })}
+              />
+            </SettingRow>
 
-        <SettingRow label={t('settings.language')} hint={t('settings.languageHint')}>
-          <Segmented<Lang>
-            aria-label={t('settings.language')}
-            testId="settings-lang"
-            value={s.language}
-            options={[
-              { value: 'en', label: t('lang.en') },
-              { value: 'he', label: t('lang.he') },
-            ]}
-            onChange={(language) => patch(languagePatch(s, language))}
-          />
-        </SettingRow>
+            <SettingRow className="anim-slide-up" label={t('settings.wordLanguage')} hint={t('settings.wordLanguageHint')}>
+              <Segmented<WordLanguage>
+                aria-label={t('settings.wordLanguage')}
+                testId="settings-wordlang"
+                value={s.wordLanguage}
+                options={[
+                  { value: 'auto', label: t('settings.wordLanguage.auto') },
+                  { value: 'en', label: t('lang.en') },
+                  { value: 'he', label: t('lang.he') },
+                ]}
+                onChange={(wordLanguage) => patch(wordLanguagePatch(s, wordLanguage))}
+              />
+            </SettingRow>
+          </div>
+        </section>
 
-        <SettingRow label={t('settings.wordLanguage')} hint={t('settings.wordLanguageHint')}>
-          <Segmented<WordLanguage>
-            aria-label={t('settings.wordLanguage')}
-            testId="settings-wordlang"
-            value={s.wordLanguage}
-            options={[
-              { value: 'auto', label: t('settings.wordLanguage.auto') },
-              { value: 'en', label: t('lang.en') },
-              { value: 'he', label: t('lang.he') },
-            ]}
-            onChange={(wordLanguage) => patch(wordLanguagePatch(s, wordLanguage))}
-          />
-        </SettingRow>
+        <section className="settings__group" aria-labelledby="settings-group-phone">
+          <h2 id="settings-group-phone" className="settings__groupTitle">
+            <span className="settings__groupDot settings__groupDot--phone" aria-hidden="true" />
+            {t('settings.group.phone')}
+          </h2>
+          <div className="settings__rows stagger stagger--auto">
+            <SettingRow className="anim-slide-up" label={t('settings.revealMethod')} status={t(SENSOR_STATUS[permission])}>
+              <Segmented<RevealMethod>
+                aria-label={t('settings.revealMethod')}
+                testId="settings-reveal"
+                value={s.revealMethod}
+                options={[
+                  { value: 'lift', label: t('settings.reveal.lift') },
+                  { value: 'hold', label: t('settings.reveal.hold') },
+                ]}
+                onChange={(revealMethod) => {
+                  patch({ revealMethod });
+                  // Still inside the tap: iOS grants sensor access only from a user gesture, and the status
+                  // line below updates right away. Setup's Start button asks again if this was skipped.
+                  if (revealMethod === 'lift') void requestSensorPermission();
+                }}
+              />
+            </SettingRow>
 
-        <SettingRow label={t('settings.penalty')} hint={t('settings.penaltyHint')}>
-          <Segmented<Penalty>
-            aria-label={t('settings.penalty')}
-            testId="settings-penalty"
-            value={s.penalty}
-            options={[
-              { value: 'off', label: t('common.off') },
-              { value: 'dare', label: t('settings.penalty.dare') },
-              { value: 'drink', label: t('settings.penalty.drink') },
-            ]}
-            onChange={(penalty) => patch({ penalty })}
-          />
-        </SettingRow>
+            <SettingRow className="anim-slide-up" label={t('settings.sounds')} hint={t('settings.soundsHint')}>
+              <OnOffSwitch
+                aria-label={t('settings.sounds')}
+                value={s.sounds}
+                onChange={(sounds) => {
+                  // Inside the tap, so the cues can sound right away on this screen too (WebAudio
+                  // needs a gesture); the GameProvider mirrors the setting into sfx.ts.
+                  if (sounds) unlockAudio();
+                  patch({ sounds });
+                }}
+              />
+            </SettingRow>
+
+            <SettingRow className="anim-slide-up" label={t('settings.language')} hint={t('settings.languageHint')}>
+              <Segmented<Lang>
+                aria-label={t('settings.language')}
+                testId="settings-lang"
+                value={s.language}
+                options={[
+                  { value: 'en', label: t('lang.en') },
+                  { value: 'he', label: t('lang.he') },
+                ]}
+                onChange={(language) => patch(languagePatch(s, language))}
+              />
+            </SettingRow>
+          </div>
+        </section>
       </div>
 
       <hr className="settings__divider" />
@@ -180,7 +219,7 @@ export function SettingsScreen() {
 
       <div className="pg-grow" />
 
-      <Button variant="secondary" size="l" block data-testid="settings-back" onClick={goBack}>
+      <Button variant="secondary" size="l" block sfx="whoosh" data-testid="settings-back" onClick={goBack}>
         {t('common.back')}
       </Button>
     </main>

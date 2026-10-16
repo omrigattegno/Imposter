@@ -8,30 +8,32 @@
  *      mood: 'idle' (default, blinks now and then) | 'happy' | 'shocked' | 'sneaky' | 'sad' | 'think'
  *      animate: 'none' (default) | 'bob' (gentle idle float) | 'wiggle' | 'jump' | 'shake'
  *      unmasked: true plays the mask-off reveal (the mask slides down and drops), used on Results.
+ *        The drop animates only on a false -> true transition; mounting with unmasked already true
+ *        shows the bare face at once. While unmasked, the default mood ('idle') shows the "caught"
+ *        (shocked) face; an explicit mood wins.
  *  - Everything is vector, offline and theme-safe; no external assets.
  *
- * PLACEHOLDER: until the characters land this draws a coloured circle with an eye-mask.
+ * Root <svg> attributes: data-avatar (id), data-mood (the prop), data-unmasked ('true'|'false'), and
+ * data-placeholder="true" only while a character's file has not landed yet (see registry.tsx).
+ * Characters: ./characters/<id>.tsx, shared parts: ./parts.tsx, types and colours: ./core.ts.
  */
-import type { CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
+import {
+  AVATAR_COLORS,
+  AVATAR_IDS,
+  isAvatarId,
+  MASK_DROP_MS,
+  MaskStateContext,
+  type AvatarAnimation,
+  type AvatarId,
+  type AvatarMood,
+  type MaskState,
+} from './core';
+import { CAST, isRegistered } from './registry';
+import './avatars.css';
 
-export const AVATAR_IDS = [
-  'bean',
-  'bolt',
-  'bubble',
-  'cloud',
-  'dot',
-  'echo',
-  'fig',
-  'glow',
-  'hoop',
-  'ivy',
-  'jet',
-  'kiwi',
-] as const;
-export type AvatarId = (typeof AVATAR_IDS)[number];
-
-export type AvatarMood = 'idle' | 'happy' | 'shocked' | 'sneaky' | 'sad' | 'think';
-export type AvatarAnimation = 'none' | 'bob' | 'wiggle' | 'jump' | 'shake';
+export { AVATAR_IDS, isAvatarId };
+export type { AvatarId, AvatarMood, AvatarAnimation };
 
 export interface AvatarMeta {
   id: AvatarId;
@@ -39,24 +41,9 @@ export interface AvatarMeta {
   color: string;
 }
 
-export const AVATARS: Record<AvatarId, AvatarMeta> = {
-  bean: { id: 'bean', color: '#FF5C7A' },
-  bolt: { id: 'bolt', color: '#FFC857' },
-  bubble: { id: 'bubble', color: '#7CD6FF' },
-  cloud: { id: 'cloud', color: '#C9B6FF' },
-  dot: { id: 'dot', color: '#5EE6A8' },
-  echo: { id: 'echo', color: '#FF9F6B' },
-  fig: { id: 'fig', color: '#B678FF' },
-  glow: { id: 'glow', color: '#FFE66D' },
-  hoop: { id: 'hoop', color: '#4FD1C5' },
-  ivy: { id: 'ivy', color: '#8BE35A' },
-  jet: { id: 'jet', color: '#6B8CFF' },
-  kiwi: { id: 'kiwi', color: '#FF7EB6' },
-};
-
-export function isAvatarId(x: unknown): x is AvatarId {
-  return typeof x === 'string' && (AVATAR_IDS as readonly string[]).includes(x);
-}
+export const AVATARS: Record<AvatarId, AvatarMeta> = Object.fromEntries(
+  AVATAR_IDS.map((id) => [id, { id, color: AVATAR_COLORS[id] }]),
+) as Record<AvatarId, AvatarMeta>;
 
 export interface AvatarProps {
   id: string | undefined;
@@ -70,27 +57,56 @@ export interface AvatarProps {
   label?: string;
 }
 
+/**
+ * The mask stays while `unmasked` is false; on false -> true it stays a little longer with the drop
+ * animation, then leaves the DOM. Mounting with unmasked=true never shows it.
+ */
+function useMaskState(unmasked: boolean): MaskState {
+  const [prev, setPrev] = useState(unmasked);
+  const [dropping, setDropping] = useState(false);
+  if (prev !== unmasked) {
+    // Adjusting state from a prop change during render (React docs pattern): no flash of a bare face.
+    setPrev(unmasked);
+    setDropping(unmasked);
+  }
+  useEffect(() => {
+    if (!dropping) return;
+    const timer = setTimeout(() => setDropping(false), MASK_DROP_MS + 120);
+    return () => clearTimeout(timer);
+  }, [dropping]);
+  if (!unmasked) return 'on';
+  return dropping ? 'dropping' : 'off';
+}
+
 export function Avatar({ id, size = 64, mood = 'idle', animate = 'none', unmasked = false, className = '', style, label }: AvatarProps) {
   const meta = isAvatarId(id) ? AVATARS[id] : AVATARS.bean;
+  const maskState = useMaskState(unmasked);
+  // Random blink phase and period per instance so a row of avatars never blinks together.
+  const [blink] = useState(() => ({
+    delay: `${(-(Math.random() * 4.4)).toFixed(2)}s`,
+    dur: `${(3.8 + Math.random() * 1.6).toFixed(2)}s`,
+  }));
+  const faceMood: AvatarMood = unmasked && mood === 'idle' ? 'shocked' : mood;
+  const rootStyle = { '--av-blink-delay': blink.delay, '--av-blink-dur': blink.dur, ...style } as CSSProperties;
+  const Face = CAST[meta.id].Face;
   return (
     <svg
       className={`avatar avatar--${animate} avatar--${mood} ${className}`.trim()}
       width={size}
       height={size}
       viewBox="0 0 120 120"
-      style={style}
+      style={rootStyle}
       role={label ? 'img' : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
       data-avatar={meta.id}
       data-mood={mood}
       data-unmasked={unmasked ? 'true' : 'false'}
+      data-placeholder={isRegistered(meta.id) ? undefined : 'true'}
     >
-      <circle cx="60" cy="60" r="52" fill="#F1C7A3" stroke="#1B1F3B" strokeWidth="6" />
-      {!unmasked && <rect x="22" y="44" width="76" height="26" rx="13" fill={meta.color} stroke="#1B1F3B" strokeWidth="5" />}
-      <circle cx="44" cy="57" r="6" fill="#1B1F3B" />
-      <circle cx="76" cy="57" r="6" fill="#1B1F3B" />
-      <path d="M44 84 Q60 98 76 84" fill="none" stroke="#1B1F3B" strokeWidth="5" strokeLinecap="round" />
+      <MaskStateContext.Provider value={maskState}>
+        <Face mood={faceMood} />
+      </MaskStateContext.Provider>
     </svg>
   );
 }

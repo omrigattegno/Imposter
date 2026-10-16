@@ -11,7 +11,7 @@ function Svg({ size = 22, className = '', ...rest }: IconProps) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2.2}
+      strokeWidth={2.4}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -78,10 +78,27 @@ export function IconX(props: IconProps) {
   );
 }
 
+export function IconPlus(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 5v14M5 12h14" />
+    </Svg>
+  );
+}
+
 export function IconTrash(props: IconProps) {
   return (
     <Svg {...props}>
       <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6" />
+    </Svg>
+  );
+}
+
+/** Two crossing arrows: the Random category chip. */
+export function IconShuffle(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
     </Svg>
   );
 }

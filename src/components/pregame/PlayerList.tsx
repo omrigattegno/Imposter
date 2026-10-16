@@ -1,8 +1,10 @@
 /**
  * Seating-order list for Setup: drag a row by its grip handle (pointer events, works with touch),
  * or use the up/down buttons (keyboard and screen-reader path), plus a remove button per row.
- * With `onRename` the name is a button: a tap swaps it for an inline input (Enter / blur commit,
- * Escape cancels) so a typo can be fixed without removing the player and losing their score.
+ * Each row shows the player's avatar as a button (data-testid="player-avatar"); with `onPickAvatar`
+ * a tap on it opens the character picker. With `onRename` the name is a button: a tap swaps it for an
+ * inline input (Enter / blur commit, Escape cancels) so a typo can be fixed without removing the
+ * player and losing their score.
  *
  * Drag model: on pointer down we snapshot every row's vertical midpoint; while moving, the target index
  * is "how many other rows have their midpoint above the dragged row's current centre". The dragged row
@@ -10,8 +12,10 @@
  * reordering happens until release. The order is committed with one REORDER_PLAYERS on pointer up.
  */
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { Avatar } from '../../avatars';
 import type { Player } from '../../game/types';
 import { useT } from '../../i18n';
+import { haptic, playSfx } from '../../lib/sfx';
 import { IconDown, IconGrip, IconUp, IconX } from './icons';
 
 interface DragSession {
@@ -41,6 +45,8 @@ export interface PlayerListProps {
   onRemove: (id: string) => void;
   /** Tap-to-edit names. Return false to keep the editor open (the new name was rejected). */
   onRename?: (id: string, name: string) => boolean | void;
+  /** Tap on the row's avatar (opens the character picker for that player id). */
+  onPickAvatar?: (id: string) => void;
 }
 
 interface Edit {
@@ -55,7 +61,7 @@ function reordered(ids: readonly string[], from: number, to: number): string[] {
   return next;
 }
 
-export function PlayerList({ players, disabled = false, onReorder, onRemove, onRename }: PlayerListProps) {
+export function PlayerList({ players, disabled = false, onReorder, onRemove, onRename, onPickAvatar }: PlayerListProps) {
   const t = useT();
   const listRef = useRef<HTMLOListElement>(null);
   const sessionRef = useRef<DragSession | null>(null);
@@ -86,7 +92,10 @@ export function PlayerList({ players, disabled = false, onReorder, onRemove, onR
       if (!s) return;
       sessionRef.current = null;
       setDrag(null);
-      if (commit && s.to !== s.from) onReorder(reordered(s.ids, s.from, s.to));
+      if (commit && s.to !== s.from) {
+        playSfx('pop');
+        onReorder(reordered(s.ids, s.from, s.to));
+      }
     },
     [onReorder],
   );
@@ -135,6 +144,7 @@ export function PlayerList({ players, disabled = false, onReorder, onRemove, onR
       pitch,
       ids: players.map((p) => p.id),
     };
+    haptic('light');
     setDrag({ from: index, to: index, dy: 0, pitch });
   };
 
@@ -166,6 +176,7 @@ export function PlayerList({ players, disabled = false, onReorder, onRemove, onR
 
   const move = (from: number, to: number) => {
     if (to < 0 || to >= players.length || from === to) return;
+    playSfx('tap');
     onReorder(
       reordered(
         players.map((p) => p.id),
@@ -194,9 +205,23 @@ export function PlayerList({ players, disabled = false, onReorder, onRemove, onR
           >
             <IconGrip />
           </button>
-          <span className="prow__seat" aria-hidden="true">
-            {i + 1}
-          </span>
+          <button
+            type="button"
+            className="prow__avatar"
+            data-testid="player-avatar"
+            data-avatar={p.avatar}
+            aria-label={t('setup.changeAvatar', { name: p.name })}
+            disabled={disabled || !onPickAvatar}
+            onClick={() => {
+              playSfx('tap');
+              onPickAvatar?.(p.id);
+            }}
+          >
+            <Avatar id={p.avatar} size={44} />
+            <span className="prow__seat" aria-hidden="true">
+              {i + 1}
+            </span>
+          </button>
           {editing?.id === p.id ? (
             <input
               className="input prow__edit"
@@ -259,7 +284,10 @@ export function PlayerList({ players, disabled = false, onReorder, onRemove, onR
               className="prow__btn prow__btn--remove"
               aria-label={t('setup.remove', { name: p.name })}
               disabled={disabled}
-              onClick={() => onRemove(p.id)}
+              onClick={() => {
+                playSfx('tap');
+                onRemove(p.id);
+              }}
             >
               <IconX />
             </button>

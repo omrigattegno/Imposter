@@ -1,0 +1,245 @@
+/* Motion utilities for the "cute & rounded" redesign. Screens add these classes to elements; every
+   animation is CSS only, GPU-friendly (transform/opacity, plus a box-shadow glow on the reveal card), and
+   switched off under prefers-reduced-motion (the element simply sits in its final state).
+
+   CONTRACT (class -> effect):
+     .anim-pop-in        scale from .9 + fade, 260 ms, bouncy (chips, cards, avatars appearing)
+     .anim-slide-up      rise 16px + fade, 240 ms (rows, banners)
+     .anim-screen-enter  page fade + slide 220 ms (put it on the <main class="screen">)
+     .anim-pulse         soft breathing scale, 1.2 s loop (countdown ring, "your turn" chip)
+     .anim-wobble        slow sad wobble (rotate +-4deg), 2.4 s loop (Imposter wins)
+     .anim-float         gentle up/down float, 3 s loop (hero avatar, pass-to avatar)
+     .anim-glow          pulsing accent glow, 1.8 s loop (the revealed secret card); use --glow-color
+     .anim-shake         quick horizontal shake, 400 ms (wrong guess, invalid input)
+     .anim-bounce-in     drop in from above with a bounce, 500 ms (results banner)
+     .anim-fade-in       plain fade, 200 ms
+     .stagger            every direct child starts its animation after calc(var(--i) * 70 ms); set
+                         style={{ '--i': index }} on each child (or use .stagger--auto for up to 12
+                         children without inline styles). --stagger-step overrides the 70 ms.
+     .anim-delay-1 .. 4  fixed delays of 100/200/300/400 ms for one-offs.
+   All entrance animations use `animation-fill-mode: both`, so a delayed element is invisible until
+   its turn. */
+
+@keyframes anim-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes anim-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes anim-screen-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes anim-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+@keyframes anim-wobble {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+@keyframes anim-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+@keyframes anim-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--glow-color, var(--accent)) 0%, transparent),
+      0 0 24px 2px color-mix(in srgb, var(--glow-color, var(--accent)) 28%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, var(--glow-color, var(--accent)) 22%, transparent),
+      0 0 44px 8px color-mix(in srgb, var(--glow-color, var(--accent)) 46%, transparent);
+  }
+}
+@keyframes anim-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+@keyframes anim-bounce-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.96);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(6px) scale(1.02);
+  }
+  80% {
+    transform: translateY(-3px) scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes anim-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.anim-pop-in {
+  animation: anim-pop-in 260ms var(--ease-bounce) both;
+}
+.anim-slide-up {
+  animation: anim-slide-up 240ms var(--ease) both;
+}
+.anim-screen-enter {
+  animation: anim-screen-enter 220ms var(--ease) both;
+}
+.anim-pulse {
+  animation: anim-pulse 1.2s ease-in-out infinite;
+}
+.anim-wobble {
+  animation: anim-wobble 2.4s ease-in-out infinite;
+  transform-origin: 50% 85%;
+}
+.anim-float {
+  animation: anim-float 3s ease-in-out infinite;
+}
+.anim-glow {
+  animation: anim-glow 1.8s ease-in-out infinite;
+}
+.anim-shake {
+  animation: anim-shake 400ms var(--ease) both;
+}
+.anim-bounce-in {
+  animation: anim-bounce-in 500ms var(--ease-bounce) both;
+}
+.anim-fade-in {
+  animation: anim-fade-in 200ms var(--ease) both;
+}
+
+/* Stagger: children declare their own animation class; the parent spaces them out. */
+.stagger > * {
+  animation-delay: calc(var(--i, 0) * var(--stagger-step, 70ms));
+}
+.stagger--auto > :nth-child(1) {
+  --i: 0;
+}
+.stagger--auto > :nth-child(2) {
+  --i: 1;
+}
+.stagger--auto > :nth-child(3) {
+  --i: 2;
+}
+.stagger--auto > :nth-child(4) {
+  --i: 3;
+}
+.stagger--auto > :nth-child(5) {
+  --i: 4;
+}
+.stagger--auto > :nth-child(6) {
+  --i: 5;
+}
+.stagger--auto > :nth-child(7) {
+  --i: 6;
+}
+.stagger--auto > :nth-child(8) {
+  --i: 7;
+}
+.stagger--auto > :nth-child(9) {
+  --i: 8;
+}
+.stagger--auto > :nth-child(10) {
+  --i: 9;
+}
+.stagger--auto > :nth-child(11) {
+  --i: 10;
+}
+.stagger--auto > :nth-child(12) {
+  --i: 11;
+}
+.anim-delay-1 {
+  animation-delay: 100ms;
+}
+.anim-delay-2 {
+  animation-delay: 200ms;
+}
+.anim-delay-3 {
+  animation-delay: 300ms;
+}
+.anim-delay-4 {
+  animation-delay: 400ms;
+}
+
+/* Reduced motion: no movement at all; elements render in their resting state. The looping ones are
+   switched off explicitly so base.css's 0.01 ms rule cannot spin them. */
+@media (prefers-reduced-motion: reduce) {
+  .anim-pop-in,
+  .anim-slide-up,
+  .anim-screen-enter,
+  .anim-pulse,
+  .anim-wobble,
+  .anim-float,
+  .anim-glow,
+  .anim-shake,
+  .anim-bounce-in,
+  .anim-fade-in,
+  .stagger > * {
+    animation: none !important;
+  }
+  .anim-glow {
+    box-shadow: 0 0 32px 4px color-mix(in srgb, var(--glow-color, var(--accent)) 36%, transparent);
+  }
+}

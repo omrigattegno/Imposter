@@ -1,22 +1,30 @@
 /**
- * Home: wordmark, Play / How to play, last game's players, language toggle, install prompt.
+ * Home: logo, the hero huddle, Play / How to play, last game's players as avatar chips, language
+ * toggle, install prompt.
  * While a round is in progress (phase !== 'setup') the primary action becomes "Resume round n"
  * with a smaller "Start over"; Play is hidden then because Setup cannot edit players mid-round.
  * Between rounds of an evening (no round, but scores/history kept after Players or Quit round) the
  * primary action is "Continue (round n)" with a smaller "New game" that clears the scores, so a
  * later session never silently continues an old evening.
  */
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
+import { Avatar } from '../avatars';
 import { Button } from '../components/Button';
 import { InstallPrompt } from '../components/InstallPrompt';
 import { Modal } from '../components/Modal';
+import { HeroScene } from '../components/pregame/HeroScene';
 import { LanguageToggle } from '../components/pregame/LanguageToggle';
-import { Wordmark } from '../components/pregame/Wordmark';
+import { Logo } from '../components/pregame/Logo';
 import { loadLastPlayers } from '../game/storage';
 import { useGame } from '../game/store';
 import { useT } from '../i18n';
 import { useNav } from '../nav';
 import '../styles/pregame.css';
+
+interface LastPlayer {
+  name: string;
+  avatar?: string;
+}
 
 export function HomeScreen() {
   const t = useT();
@@ -29,10 +37,15 @@ export function HomeScreen() {
   // history with no round means an evening is being continued (after EDIT_PLAYERS / ABORT_ROUND).
   const evening = !inProgress && state.history.length > 0;
   const roundNumber = state.round?.number ?? state.history.length + 1;
-  const lastNames = useMemo(
-    () => (state.players.length ? state.players.map((p) => p.name) : loadLastPlayers().map((p) => p.name)),
+  const lastPlayers = useMemo<LastPlayer[]>(
+    () =>
+      state.players.length
+        ? state.players.map((p) => ({ name: p.name, avatar: p.avatar }))
+        : loadLastPlayers().map((p) => ({ name: p.name, avatar: p.avatar })),
     [state.players],
   );
+  // The hero shows the group's own characters once there is a group; the house cast until then.
+  const heroIds = useMemo(() => lastPlayers.flatMap((p) => (p.avatar ? [p.avatar] : [])), [lastPlayers]);
 
   const clearGame = () => {
     setConfirmClear(false);
@@ -41,20 +54,21 @@ export function HomeScreen() {
   };
 
   return (
-    <main className="screen home" data-testid="home-screen">
+    <main className="screen home anim-screen-enter" data-testid="home-screen">
       <div className="home__top">
         <LanguageToggle />
       </div>
 
-      <div className="home__hero">
-        <Wordmark />
-      </div>
+      <header className="home__hero">
+        <Logo />
+        <HeroScene ids={heroIds} />
+      </header>
 
       <div className="home__actions">
         {inProgress ? (
-          <section className="resume">
+          <section className="resume anim-slide-up">
             <p className="resume__label">{t('home.inProgress')}</p>
-            <Button variant="primary" size="xl" block data-testid="home-resume" onClick={() => reset('game')}>
+            <Button variant="primary" size="xl" block sfx="whoosh" data-testid="home-resume" onClick={() => reset('game')}>
               {t('home.resume', { n: roundNumber })}
             </Button>
             <Button variant="ghost" block data-testid="home-start-over" onClick={() => setConfirmClear(true)}>
@@ -62,9 +76,9 @@ export function HomeScreen() {
             </Button>
           </section>
         ) : evening ? (
-          <section className="resume">
+          <section className="resume anim-slide-up">
             <p className="resume__label">{t('home.evening')}</p>
-            <Button variant="primary" size="xl" block data-testid="home-continue" onClick={() => go('setup')}>
+            <Button variant="primary" size="xl" block sfx="whoosh" data-testid="home-continue" onClick={() => go('setup')}>
               {t('home.continueEvening', { n: roundNumber })}
             </Button>
             <Button variant="ghost" block data-testid="home-new-game" onClick={() => setConfirmClear(true)}>
@@ -72,22 +86,39 @@ export function HomeScreen() {
             </Button>
           </section>
         ) : (
-          <Button variant="primary" size="xl" block data-testid="home-play" onClick={() => go('setup')}>
+          <Button
+            variant="primary"
+            size="xl"
+            block
+            sfx="whoosh"
+            className="anim-slide-up"
+            data-testid="home-play"
+            onClick={() => go('setup')}
+          >
             {t('home.play')}
           </Button>
         )}
-        <Button variant="secondary" size="l" block data-testid="home-howto" onClick={() => go('howto')}>
+        <Button
+          variant="secondary"
+          size="l"
+          block
+          sfx="whoosh"
+          className="anim-slide-up anim-delay-1"
+          data-testid="home-howto"
+          onClick={() => go('howto')}
+        >
           {t('common.howToPlay')}
         </Button>
       </div>
 
-      {lastNames.length > 0 && (
-        <section className="home__players">
+      {lastPlayers.length > 0 && (
+        <section className="home__players anim-slide-up anim-delay-2">
           <h2 className="pg-section__title">{t('home.lastPlayers')}</h2>
-          <ul className="chips">
-            {lastNames.map((name, i) => (
-              <li key={`${i}-${name}`} className="chip">
-                {name}
+          <ul className="chips stagger" style={{ '--stagger-step': '40ms' } as CSSProperties}>
+            {lastPlayers.map((p, i) => (
+              <li key={`${i}-${p.name}`} className="chip chip--avatar anim-pop-in" style={{ '--i': i } as CSSProperties}>
+                {p.avatar && <Avatar id={p.avatar} size={28} />}
+                <span className="chip__label">{p.name}</span>
               </li>
             ))}
           </ul>

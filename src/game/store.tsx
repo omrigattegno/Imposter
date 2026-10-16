@@ -18,6 +18,7 @@ import {
 import { STORAGE_KEY_STATE } from './constants';
 import { createInitialState, nextFreeAvatar, prepareRound, reduce, validatePlayerName, wordLang, type NameError } from './engine';
 import { AVATAR_IDS, isAvatarId } from '../avatars';
+import { setSfxEnabled } from '../lib/sfx';
 import { cryptoRng, newId } from './rng';
 import { detectLanguage, loadLastPlayers, loadSavedSettings, loadSnapshot, saveSnapshot } from './storage';
 import type { Action, GameState, Player, WordPack } from './types';
@@ -74,6 +75,11 @@ export function GameProvider({ children, initialState }: { children: ReactNode; 
   useEffect(() => {
     saveSnapshot(state);
   }, [state]);
+
+  // Sound effects follow the setting (off by default); sfx.ts stays silent until then.
+  useEffect(() => {
+    setSfxEnabled(state.settings.sounds);
+  }, [state.settings.sounds]);
 
   // A snapshot written by another window: adopt it. Our own writes never raise this event, and
   // re-saving an adopted snapshot writes the same string, so two windows settle without looping.

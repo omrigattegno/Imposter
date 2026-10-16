@@ -7,9 +7,10 @@
  *
  * The strings live here rather than in i18n/messages.* (those modules belong to the screens); both
  * languages are still required by the `Record<keyof typeof en, string>` shape, like the message modules.
- * Styling is inline with design tokens and logical properties, so the card mirrors under dir="rtl".
+ * Styling: pregame.css (.install-card*), logical properties so the card mirrors under dir="rtl".
  */
-import { useState, type CSSProperties } from 'react';
+import { useState } from 'react';
+import { Avatar } from '../avatars';
 import { useLang } from '../i18n';
 import { dismissInstall, isInstallDismissed, isIOS, isStandalone, promptInstall, useCanInstall } from '../lib/pwa';
 import { Button } from './Button';
@@ -31,27 +32,6 @@ const he: Record<keyof typeof en, string> = {
 };
 
 const messages = { en, he };
-
-const cardStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 'var(--space-3)',
-  padding: 'var(--space-4)',
-  borderRadius: 'var(--radius-l)',
-  background: 'var(--bg-elev)',
-  border: '1px solid var(--line)',
-};
-const rowStyle: CSSProperties = { display: 'flex', alignItems: 'flex-start', gap: 'var(--space-2)' };
-const textStyle: CSSProperties = { flex: '1 1 auto', minWidth: 0, textAlign: 'start' };
-const titleStyle: CSSProperties = { fontSize: 'var(--fs-m)', fontWeight: 700, marginBlockEnd: 'var(--space-1)' };
-const bodyStyle: CSSProperties = { color: 'var(--text-muted)', fontSize: 'var(--fs-s)' };
-const closeStyle: CSSProperties = {
-  flex: 'none',
-  minWidth: 'var(--tap)',
-  paddingInline: 0,
-  marginBlockStart: 'calc(-1 * var(--space-2))',
-  marginInlineEnd: 'calc(-1 * var(--space-2))',
-};
 
 export function InstallPrompt() {
   const lang = useLang();
@@ -80,20 +60,23 @@ export function InstallPrompt() {
   };
 
   return (
-    <section className="install-card" aria-label={m.title} style={cardStyle}>
-      <div style={rowStyle}>
-        <div style={textStyle}>
-          <h2 style={titleStyle}>{m.title}</h2>
-          <p style={bodyStyle}>{mode === 'native' ? m.body : m.iosHint}</p>
+    <section className="install-card anim-slide-up" aria-label={m.title}>
+      <div className="install-card__row">
+        <span className="install-card__mascot" aria-hidden="true">
+          <Avatar id="bubble" size={48} mood="happy" />
+        </span>
+        <div className="install-card__text">
+          <h2 className="install-card__title">{m.title}</h2>
+          <p className="install-card__body">{mode === 'native' ? m.body : m.iosHint}</p>
         </div>
-        <Button variant="ghost" aria-label={m.dismiss} title={m.dismiss} onClick={dismiss} style={closeStyle}>
+        <Button variant="ghost" className="install-card__close" aria-label={m.dismiss} title={m.dismiss} onClick={dismiss}>
           <svg
             width="20"
             height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth={2.2}
+            strokeWidth={2.4}
             strokeLinecap="round"
             aria-hidden="true"
             focusable="false"

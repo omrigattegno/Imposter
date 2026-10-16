@@ -1,0 +1,19 @@
+/* Confetti covers its (position: relative) parent and never catches taps. */
+.confetti {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  display: block;
+}
+.confetti--static {
+  display: grid;
+  place-items: center;
+}
+.confetti__sparkle {
+  width: min(42%, 180px);
+  height: auto;
+  opacity: 0.9;
+}

@@ -8,8 +8,20 @@ body,
 #root {
   height: 100%;
 }
+/* The page backdrop lives on the root element so it covers the whole canvas (including anything that
+   scrolls past 100% and the overscroll area): a very subtle dot grid over a soft top vignette. It stays
+   deep night-blue everywhere, so the black reveal card never flashes against a bright surround. */
 html {
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1.6px),
+    radial-gradient(ellipse 120% 60% at 50% -10%, rgba(124, 214, 255, 0.11), transparent 70%),
+    radial-gradient(ellipse 90% 50% at 50% 110%, rgba(255, 126, 182, 0.07), transparent 70%);
+  background-repeat: repeat, no-repeat, no-repeat;
+  background-size:
+    22px 22px,
+    100% 100%,
+    100% 100%;
   overscroll-behavior: none; /* no pull-to-refresh while passing the phone */
   -webkit-text-size-adjust: 100%;
 }
@@ -19,7 +31,7 @@ body {
   font-size: var(--fs-m);
   line-height: 1.4;
   color: var(--text);
-  background: var(--bg);
+  background: transparent;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
@@ -43,12 +55,24 @@ h3,
 p {
   margin: 0;
 }
+h1,
+h2,
+h3 {
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+/* Big numbers (timer, countdown, scores) line up when they tick. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
 .no-select {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
-/* Full-height mobile screen with safe-area padding. */
+/* Full-height mobile screen with safe-area padding. Setup's sticky footer relies on this exact
+   padding (it uses negative margins to reach the screen edges), so keep the values in step. */
 .screen {
   min-height: 100dvh;
   display: flex;
@@ -66,11 +90,17 @@ p {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 2px;
+}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

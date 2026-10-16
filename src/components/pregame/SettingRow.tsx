@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Segmented } from '../Segmented';
 import { useT } from '../../i18n';
+import './SettingRow.css';
 
 export interface SettingRowProps {
   label: string;
@@ -11,7 +12,11 @@ export interface SettingRowProps {
   children: ReactNode;
 }
 
-/** One labelled settings row: title, optional hint, the control, optional status line. */
+/**
+ * One labelled settings row drawn as a soft card: title, optional hint, the control, optional status
+ * line with a small dot. Layout rules shared with pregame.css (.srow) are repeated in SettingRow.css
+ * with identical values, so the cascade order between the two files does not matter.
+ */
 export function SettingRow({ label, hint, status, className = '', children }: SettingRowProps) {
   return (
     <div className={`srow ${className}`.trim()}>
@@ -20,14 +25,19 @@ export function SettingRow({ label, hint, status, className = '', children }: Se
         {hint && <span className="srow__hint">{hint}</span>}
       </div>
       <div className="srow__control">{children}</div>
-      {status && <p className="srow__status">{status}</p>}
+      {status && (
+        <p className="srow__status">
+          <span className="srow__status-dot" aria-hidden="true" />
+          {status}
+        </p>
+      )}
     </div>
   );
 }
 
 type OnOff = 'on' | 'off';
 
-/** Boolean setting rendered as an On / Off segmented control. */
+/** Boolean setting rendered as an On / Off segmented control (the pill turns green when on). */
 export function OnOffSwitch({
   value,
   onChange,
@@ -41,6 +51,7 @@ export function OnOffSwitch({
   return (
     <Segmented<OnOff>
       aria-label={ariaLabel}
+      className="segmented--switch"
       value={value ? 'on' : 'off'}
       options={[
         { value: 'off', label: t('common.off') },

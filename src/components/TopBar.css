@@ -1,13 +1,16 @@
+/* Screen header: leading slot | centred title | trailing slot. Logical start/end so it mirrors in RTL. */
 .topbar {
   display: grid;
   grid-template-columns: var(--tap) 1fr var(--tap);
   align-items: center;
-  min-height: var(--tap);
+  gap: var(--space-2);
+  min-height: 56px;
   margin-bottom: var(--space-4);
 }
 .topbar__title {
   font-size: var(--fs-l);
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: -0.015em;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -21,7 +24,24 @@
 .topbar__slot--end {
   justify-content: flex-end;
 }
+/* Slot buttons are round, subtle "coins": a soft disc that still reads as pressable. */
 .topbar .btn {
   padding: 0 var(--space-2);
   min-width: var(--tap);
+  min-height: var(--tap);
+  border-radius: 999px;
+}
+.topbar .btn--ghost {
+  background: var(--bg-elev);
+  color: var(--text);
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.topbar .btn--ghost:active {
+  transform: translateY(2px);
+  background: var(--bg-elev-2);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
