@@ -1,26 +1,34 @@
-/* Design tokens. Dark by default: a dark card narrows the viewing angle on the reveal screen,
-   and the whole app matches so the reveal doesn't flash. */
+/* Design tokens: "cute & rounded" on a deep night-blue base. The base stays dark on purpose: the
+   reveal card must be dark to narrow the viewing angle, and a dark app around it never flashes. */
 :root {
   color-scheme: dark;
-  --bg: #0b0d12;
-  --bg-elev: #141824;
-  --bg-elev-2: #1c2130;
-  --line: rgba(255, 255, 255, 0.1);
-  --line-strong: rgba(255, 255, 255, 0.2);
-  --text: #f3f5f9;
-  --text-muted: #9aa3b5;
-  --text-faint: #5f6878;
-  --accent: #ffd166; /* warm yellow: Play / primary actions */
+  --bg: #141a33;
+  --bg-elev: #1e2749;
+  --bg-elev-2: #2a3561;
+  --bg-pop: #344171; /* chips, pressed states */
+  --line: rgba(255, 255, 255, 0.12);
+  --line-strong: rgba(255, 255, 255, 0.24);
+  --ink: #1b1f3b; /* character outlines, text on bright fills */
+  --text: #f6f7ff;
+  --text-muted: #a7b0d6;
+  --text-faint: #6d77a3;
+  --accent: #ffc857; /* warm yellow: Play / primary actions */
+  --accent-deep: #e0a52e; /* primary button's bottom edge */
   --accent-ink: #1a1400;
-  --accent-2: #4cc9f0; /* cyan: info / secondary */
-  --danger: #ef476f; /* red: IMPOSTER */
-  --success: #06d6a0;
+  --accent-2: #7cd6ff; /* sky: info / secondary */
+  --pink: #ff7eb6;
+  --purple: #c9b6ff;
+  --danger: #ff5c7a; /* IMPOSTER */
+  --danger-deep: #d63d5c;
+  --success: #5ee6a8;
+  --success-deep: #2fbf80;
   --card-secret-bg: #000000;
-  --card-secret-text: #e9ecef;
+  --card-secret-text: #eef0ff;
 
-  --radius-s: 10px;
-  --radius-m: 16px;
-  --radius-l: 24px;
+  --radius-s: 14px;
+  --radius-m: 20px;
+  --radius-l: 28px;
+  --radius-xl: 36px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -29,7 +37,8 @@
   --space-6: 32px;
   --space-7: 48px;
 
-  --font: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, 'Noto Sans Hebrew', 'Helvetica Neue', sans-serif;
+  /* ui-rounded = SF Pro Rounded on Apple devices; the rest fall back to the system sans. No webfonts: offline. */
+  --font: ui-rounded, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, 'Noto Sans Hebrew', 'Helvetica Neue', sans-serif;
   --fs-s: 14px;
   --fs-m: 17px;
   --fs-l: 22px;
@@ -42,6 +51,8 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-pop: 0 6px 0 rgba(0, 0, 0, 0.25); /* chunky "toy" bottom edge */
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }

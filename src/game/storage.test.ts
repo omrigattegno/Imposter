@@ -159,13 +159,13 @@ describe('saveSnapshot / loadSnapshot', () => {
     const state = sampleState();
     saveSnapshot(state);
     expect(JSON.parse(fake.getItem(STORAGE_KEY_SETTINGS)!)).toEqual(state.settings);
-    expect(JSON.parse(fake.getItem(STORAGE_KEY_LAST_PLAYERS)!)).toEqual(['Dana', 'Yossi', 'Noa', 'Omri', 'Tal']);
+    expect(JSON.parse(fake.getItem(STORAGE_KEY_LAST_PLAYERS)!).map((p: { name: string }) => p.name)).toEqual(['Dana', 'Yossi', 'Noa', 'Omri', 'Tal']);
   });
 
   it('keeps the last players when saving a state with no players', () => {
     saveSnapshot(sampleState());
     saveSnapshot(createInitialState());
-    expect(loadLastPlayers()).toEqual(['Dana', 'Yossi', 'Noa', 'Omri', 'Tal']);
+    expect(loadLastPlayers().map((p) => p.name)).toEqual(['Dana', 'Yossi', 'Noa', 'Omri', 'Tal']);
   });
 
   it('clearSnapshot removes only the state', () => {
@@ -189,7 +189,7 @@ describe('loadLastPlayers', () => {
 
   it('keeps only strings', () => {
     fake.setItem(STORAGE_KEY_LAST_PLAYERS, JSON.stringify(['Dana', 3, null, 'Noa', { x: 1 }]));
-    expect(loadLastPlayers()).toEqual(['Dana', 'Noa']);
+    expect(loadLastPlayers()).toEqual([{ name: 'Dana' }, { name: 'Noa' }]);
   });
 });
 

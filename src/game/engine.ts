@@ -48,6 +48,7 @@ export const DEFAULT_SETTINGS: Settings = {
   revealMethod: 'lift',
   difficulty: 'normal',
   penalty: 'off',
+  sounds: false,
 };
 
 export function createInitialState(settings: Partial<Settings> = {}): GameState {
@@ -102,6 +103,13 @@ export function validatePlayerName(
 /** The language the secret words are drawn in ('auto' follows the app language). */
 export function wordLang(settings: Pick<Settings, 'language' | 'wordLanguage'>): Lang {
   return settings.wordLanguage === 'he' || settings.wordLanguage === 'en' ? settings.wordLanguage : settings.language;
+}
+
+/** A random avatar id not used by any player yet (falls back to any id when all are taken). */
+export function nextFreeAvatar(players: readonly Player[], ids: readonly string[], rng: Rng): string {
+  const used = new Set(players.map((p) => p.avatar).filter(Boolean));
+  const free = ids.filter((id) => !used.has(id));
+  return pickOne(rng, free.length ? free : ids);
 }
 
 export function canStart(state: GameState): boolean {
@@ -409,9 +417,10 @@ export function reduce(state: GameState, action: Action): GameState {
       const returning = bench.find((b) => b.name.toLocaleLowerCase() === lower);
       const id = returning?.id ?? action.id;
       if (state.players.some((p) => p.id === id)) return state;
+      const avatar = action.avatar ?? returning?.avatar;
       return {
         ...state,
-        players: [...state.players, { id, name }],
+        players: [...state.players, avatar ? { id, name, avatar } : { id, name }],
         benched: returning ? bench.filter((b) => b.id !== returning.id) : state.benched,
       };
     }
@@ -449,9 +458,25 @@ export function reduce(state: GameState, action: Action): GameState {
         if (players.length >= MAX_PLAYERS) break;
         if (validatePlayerName(players, p.name)) continue;
         if (players.some((x) => x.id === p.id)) continue;
-        players.push({ id: p.id, name: normalizeName(p.name) });
+        players.push(p.avatar ? { id: p.id, name: normalizeName(p.name), avatar: p.avatar } : { id: p.id, name: normalizeName(p.name) });
       }
       return { ...state, players };
+    }
+
+    case 'SET_AVATAR': {
+      if (state.phase !== 'setup') return state;
+      const me = state.players.find((p) => p.id === action.id);
+      if (!me || me.avatar === action.avatar) return state;
+      // Avatars are unique at the table: taking another player's avatar swaps the two.
+      const other = state.players.find((p) => p.avatar === action.avatar);
+      return {
+        ...state,
+        players: state.players.map((p) => {
+          if (p.id === me.id) return { ...p, avatar: action.avatar };
+          if (other && p.id === other.id) return me.avatar ? { ...p, avatar: me.avatar } : { ...p, avatar: undefined };
+          return p;
+        }),
+      };
     }
 
     case 'UPDATE_SETTINGS':
@@ -592,6 +617,7 @@ export function sanitizeSettings(s: Settings): Settings {
     revealMethod: s.revealMethod === 'hold' ? 'hold' : 'lift',
     difficulty: s.difficulty === 'easy' || s.difficulty === 'hard' ? s.difficulty : 'normal',
     penalty: s.penalty === 'dare' || s.penalty === 'drink' ? s.penalty : 'off',
+    sounds: !!s.sounds,
   };
 }
 

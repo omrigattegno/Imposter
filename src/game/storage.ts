@@ -22,7 +22,9 @@ function safeSet(key: string, value: string | null): void {
 export function saveSnapshot(state: GameState): void {
   safeSet(STORAGE_KEY_STATE, JSON.stringify(state));
   safeSet(STORAGE_KEY_SETTINGS, JSON.stringify(state.settings));
-  if (state.players.length) safeSet(STORAGE_KEY_LAST_PLAYERS, JSON.stringify(state.players.map((p) => p.name)));
+  if (state.players.length) {
+    safeSet(STORAGE_KEY_LAST_PLAYERS, JSON.stringify(state.players.map((p) => (p.avatar ? { name: p.name, avatar: p.avatar } : { name: p.name }))));
+  }
 }
 
 export function loadSnapshot(): GameState | null {
@@ -42,12 +44,27 @@ export function clearSnapshot(): void {
   safeSet(STORAGE_KEY_STATE, null);
 }
 
-export function loadLastPlayers(): string[] {
+export interface LastPlayer {
+  name: string;
+  avatar?: string;
+}
+
+/** Last game's players (names + avatars). Entries written by older builds are plain name strings. */
+export function loadLastPlayers(): LastPlayer[] {
   const raw = safeGet(STORAGE_KEY_LAST_PLAYERS);
   if (!raw) return [];
   try {
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
+    if (!Array.isArray(parsed)) return [];
+    const out: LastPlayer[] = [];
+    for (const x of parsed) {
+      if (typeof x === 'string') out.push({ name: x });
+      else if (x && typeof x === 'object' && typeof (x as LastPlayer).name === 'string') {
+        const avatar = (x as LastPlayer).avatar;
+        out.push(typeof avatar === 'string' ? { name: (x as LastPlayer).name, avatar } : { name: (x as LastPlayer).name });
+      }
+    }
+    return out;
   } catch {
     return [];
   }

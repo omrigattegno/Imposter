@@ -25,11 +25,13 @@ const PDI = '\u2069';
 export function translate(lang: Lang, key: MessageKey, params?: Params): string {
   const template = messages[lang][key] ?? messages.en[key] ?? key;
   if (!params) return template;
-  const isolate = isRtl(lang);
+  const rtl = isRtl(lang);
   return template.replace(/\{(\w+)\}/g, (_, k: string) => {
     if (!(k in params)) return `{${k}}`;
     const v = params[k];
-    return isolate && typeof v === 'string' ? `${FSI}${v}${PDI}` : String(v);
+    // Isolate string values in Hebrew templates, and Hebrew values (a word-pack name) anywhere.
+    const isolate = typeof v === 'string' && (rtl || /[\u05D0-\u05EA]/.test(v));
+    return isolate ? `${FSI}${v}${PDI}` : String(v);
   });
 }
 

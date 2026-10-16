@@ -40,11 +40,15 @@ export interface Settings {
   revealMethod: RevealMethod;
   difficulty: Difficulty;
   penalty: Penalty;
+  /** Sound effects (the discussion beep is always on). */
+  sounds: boolean;
 }
 
 export interface Player {
   id: string;
   name: string;
+  /** Avatar id from src/avatars (AVATAR_IDS). Missing on snapshots written before avatars existed. */
+  avatar?: string;
 }
 
 export interface WordRecord {
@@ -150,7 +154,8 @@ export interface GameState {
 }
 
 export type Action =
-  | { type: 'ADD_PLAYER'; id: string; name: string }
+  | { type: 'ADD_PLAYER'; id: string; name: string; avatar?: string }
+  | { type: 'SET_AVATAR'; id: string; avatar: string }
   | { type: 'REMOVE_PLAYER'; id: string }
   | { type: 'RENAME_PLAYER'; id: string; name: string }
   | { type: 'REORDER_PLAYERS'; ids: string[] }

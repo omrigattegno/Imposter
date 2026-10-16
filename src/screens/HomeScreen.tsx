@@ -30,7 +30,7 @@ export function HomeScreen() {
   const evening = !inProgress && state.history.length > 0;
   const roundNumber = state.round?.number ?? state.history.length + 1;
   const lastNames = useMemo(
-    () => (state.players.length ? state.players.map((p) => p.name) : loadLastPlayers()),
+    () => (state.players.length ? state.players.map((p) => p.name) : loadLastPlayers().map((p) => p.name)),
     [state.players],
   );
 

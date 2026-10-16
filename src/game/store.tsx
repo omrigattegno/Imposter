@@ -16,10 +16,11 @@ import {
   type ReactNode,
 } from 'react';
 import { STORAGE_KEY_STATE } from './constants';
-import { createInitialState, prepareRound, reduce, validatePlayerName, wordLang, type NameError } from './engine';
+import { createInitialState, nextFreeAvatar, prepareRound, reduce, validatePlayerName, wordLang, type NameError } from './engine';
+import { AVATAR_IDS, isAvatarId } from '../avatars';
 import { cryptoRng, newId } from './rng';
 import { detectLanguage, loadLastPlayers, loadSavedSettings, loadSnapshot, saveSnapshot } from './storage';
-import type { Action, GameState, WordPack } from './types';
+import type { Action, GameState, Player, WordPack } from './types';
 import { packsFor } from '../words';
 import { subscribeCustomPacks } from '../words/custom';
 import { useSyncExternalStore } from 'react';
@@ -45,9 +46,16 @@ function bootState(): GameState {
   const fresh = createInitialState(saved ?? { language: detectLanguage() });
   // No snapshot to resume: pre-fill last game's names so a regular group starts in seconds. This
   // happens once per boot, so a list the host clears on Setup stays cleared until the next launch.
-  const names = loadLastPlayers();
-  if (names.length === 0) return fresh;
-  return reduce(fresh, { type: 'SET_PLAYERS', players: names.map((name) => ({ id: newId(), name })) });
+  const last = loadLastPlayers();
+  if (last.length === 0) return fresh;
+  const players: Player[] = [];
+  for (const p of last) {
+    const avatar = isAvatarId(p.avatar) && !players.some((x) => x.avatar === p.avatar)
+      ? p.avatar
+      : nextFreeAvatar(players, AVATAR_IDS, cryptoRng);
+    players.push({ id: newId(), name: p.name, avatar });
+  }
+  return reduce(fresh, { type: 'SET_PLAYERS', players });
 }
 
 let customVersion = 0;
@@ -74,7 +82,10 @@ export function GameProvider({ children, initialState }: { children: ReactNode; 
     const onStorage = (e: StorageEvent) => {
       if (e.key !== STORAGE_KEY_STATE) return;
       const snapshot = loadSnapshot();
-      if (snapshot) dispatch({ type: 'LOAD', state: snapshot });
+      // Adopt only a real change: a re-sanitised echo from a window on another build must not ping-pong.
+      if (snapshot && JSON.stringify(snapshot) !== JSON.stringify(stateRef.current)) {
+        dispatch({ type: 'LOAD', state: snapshot });
+      }
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
@@ -94,7 +105,7 @@ export function GameProvider({ children, initialState }: { children: ReactNode; 
   const addPlayer = useCallback((name: string): NameError | null => {
     const err = validatePlayerName(stateRef.current.players, name);
     if (err) return err;
-    dispatch({ type: 'ADD_PLAYER', id: newId(), name });
+    dispatch({ type: 'ADD_PLAYER', id: newId(), name, avatar: nextFreeAvatar(stateRef.current.players, AVATAR_IDS, cryptoRng) });
     return null;
   }, []);
 
