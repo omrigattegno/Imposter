@@ -133,7 +133,7 @@ test.describe('round in hold mode', () => {
           await expect(secret).toContainText('Category hidden');
           await expect(secret).not.toContainText('Category:');
         } else {
-          await expect(secret).toContainText('Category:'); // the table still sees it
+          await expect(secret).not.toContainText('Category:'); // word holders never see the category
         }
       },
     });

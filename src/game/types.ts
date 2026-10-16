@@ -4,6 +4,8 @@
  */
 
 export type Lang = 'en' | 'he';
+/** Language of the secret words: 'auto' follows the app language. */
+export type WordLanguage = 'auto' | Lang;
 export type Difficulty = 'easy' | 'normal' | 'hard';
 export type RevealMethod = 'lift' | 'hold';
 export type Penalty = 'off' | 'dare' | 'drink';
@@ -23,7 +25,10 @@ export type Phase =
   | 'results';
 
 export interface Settings {
+  /** App language (texts, buttons, layout direction). */
   language: Lang;
+  /** Word-pack language; 'auto' = same as the app language. */
+  wordLanguage: WordLanguage;
   /** Category id or RANDOM_CATEGORY. */
   categoryId: string;
   imposterCount: 1 | 2;

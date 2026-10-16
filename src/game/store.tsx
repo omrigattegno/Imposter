@@ -16,7 +16,7 @@ import {
   type ReactNode,
 } from 'react';
 import { STORAGE_KEY_STATE } from './constants';
-import { createInitialState, prepareRound, reduce, validatePlayerName, type NameError } from './engine';
+import { createInitialState, prepareRound, reduce, validatePlayerName, wordLang, type NameError } from './engine';
 import { cryptoRng, newId } from './rng';
 import { detectLanguage, loadLastPlayers, loadSavedSettings, loadSnapshot, saveSnapshot } from './storage';
 import type { Action, GameState, WordPack } from './types';
@@ -81,7 +81,8 @@ export function GameProvider({ children, initialState }: { children: ReactNode; 
   }, []);
 
   const version = useSyncExternalStore(subscribeCustom, getCustomVersion, getCustomVersion);
-  const packs = useMemo(() => packsFor(state.settings.language), [state.settings.language, version]);
+  const packLang = wordLang(state.settings);
+  const packs = useMemo(() => packsFor(packLang), [packLang, version]);
   const packsRef = useRef(packs);
   packsRef.current = packs;
 

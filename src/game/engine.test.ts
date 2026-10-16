@@ -31,6 +31,7 @@ import {
   upgradeState,
   validatePlayerName,
   wordKey,
+  wordLang,
 } from './engine';
 import { seededRng } from './rng';
 import {
@@ -1292,5 +1293,36 @@ describe('isGameState', () => {
     expect(isGameState(done)).toBe(true);
     expect(isGameState(withRound({ discussionEndsAt: null }))).toBe(true);
     expect(isGameState(withRound({ discussionEndsAt: 1234 }))).toBe(true);
+  });
+});
+
+describe('word language', () => {
+  const en: WordPack = { id: 'food', name: 'Food', lang: 'en', words: [{ word: 'Pizza', category: 'food', difficulty: 1, aliases: [] }] };
+  const he: WordPack = { id: 'food', name: 'אוכל', lang: 'he', words: [{ word: 'פיצה', category: 'food', difficulty: 1, aliases: [] }] };
+
+  it('wordLang follows the app language on auto and overrides it otherwise', () => {
+    expect(wordLang({ language: 'en', wordLanguage: 'auto' })).toBe('en');
+    expect(wordLang({ language: 'he', wordLanguage: 'auto' })).toBe('he');
+    expect(wordLang({ language: 'en', wordLanguage: 'he' })).toBe('he');
+    expect(wordLang({ language: 'he', wordLanguage: 'en' })).toBe('en');
+  });
+
+  it('drawWord and usedWords use the word language, not the app language', () => {
+    const settings: Settings = { ...DEFAULT_SETTINGS, language: 'en', wordLanguage: 'he', categoryId: 'food' };
+    const drawn = drawWord([en, he], settings, [], seededRng(3));
+    expect(drawn.pack.lang).toBe('he');
+    expect(drawn.word.word).toBe('פיצה');
+
+    let s = createInitialState(settings);
+    for (const name of ['A', 'B', 'C', 'D']) s = reduce(s, { type: 'ADD_PLAYER', id: name, name });
+    s = reduce(s, prepareRound(s, [en, he], seededRng(3)));
+    expect(s.round?.categoryName).toBe('אוכל');
+    expect(s.usedWords).toEqual(['he:food:פיצה']);
+  });
+
+  it('sanitizeSettings defaults an unknown word language to auto', () => {
+    expect(sanitizeSettings({ ...DEFAULT_SETTINGS, wordLanguage: 'fr' as unknown as 'he' }).wordLanguage).toBe('auto');
+    expect(sanitizeSettings({ ...DEFAULT_SETTINGS, wordLanguage: undefined as unknown as 'he' }).wordLanguage).toBe('auto');
+    expect(sanitizeSettings({ ...DEFAULT_SETTINGS, wordLanguage: 'he' }).wordLanguage).toBe('he');
   });
 });

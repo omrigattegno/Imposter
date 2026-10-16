@@ -33,6 +33,11 @@ export function translate(lang: Lang, key: MessageKey, params?: Params): string 
   });
 }
 
+/** Language of a piece of text (a secret word) by its script, for lang/dir attributes. */
+export function langOfText(text: string): Lang {
+  return /[\u05D0-\u05EA]/.test(text) ? 'he' : 'en';
+}
+
 export function isRtl(lang: Lang): boolean {
   return lang === 'he';
 }

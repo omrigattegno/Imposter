@@ -13,7 +13,7 @@ import { Scoreboard } from '../components/game/Scoreboard';
 import { playerName, scoreboard } from '../game/engine';
 import { losingSide, penaltyForRound } from '../game/penalties';
 import { useGame } from '../game/store';
-import { useLang, useT } from '../i18n';
+import { langOfText, useLang, useT } from '../i18n';
 import { useNav } from '../nav';
 import '../styles/game.css';
 
@@ -111,7 +111,7 @@ export function ResultsScreen() {
 
         <section className="card" aria-label={t('results.secretWord')}>
           <h3 className="card__title">{t('results.secretWord')}</h3>
-          <p className="results__word" lang={lang} data-testid="results-word">
+          <p className="results__word" lang={langOfText(round.word.word)} dir="auto" data-testid="results-word">
             {round.word.word}
           </p>
           <p className="muted text-center">{t('reveal.category', { name: round.categoryName })}</p>

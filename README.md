@@ -3,7 +3,7 @@
 A pass-the-phone party game for 4–10 people around a table. One phone, no cards, no second device,
 no account. The app draws a secret word and secretly makes one player the Imposter; everyone lifts the
 phone toward their face to see their role privately, gives one-word clues, discusses, votes in private,
-and the Imposter gets a last guess if caught. Hebrew and English, with word packs per language, playable
+and the Imposter gets a last guess if caught. Hebrew and English (the word language can differ from the app language), playable
 fully offline as an installable PWA.
 
 The product brief is in [`BRIEF.md`](BRIEF.md); the module contract and state machine are in

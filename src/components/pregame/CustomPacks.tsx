@@ -6,6 +6,7 @@ import { useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { Button } from '../Button';
 import { Modal } from '../Modal';
 import { newId } from '../../game/rng';
+import { wordLang } from '../../game/engine';
 import { useGame } from '../../game/store';
 import { RANDOM_CATEGORY } from '../../game/types';
 import { useT } from '../../i18n';
@@ -39,7 +40,7 @@ export function CustomPacks() {
   const t = useT();
   const { state, dispatch } = useGame();
   const packs = useSyncExternalStore(subscribeCustomPacks, listCustomPacks, listCustomPacks);
-  const lang = state.settings.language;
+  const lang = wordLang(state.settings);
 
   const [name, setName] = useState('');
   const [text, setText] = useState('');

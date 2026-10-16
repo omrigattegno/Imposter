@@ -48,7 +48,7 @@ Phases: `setup -> reveal -> clues -> discussion -> vote -> [guess] -> results`.
 
 Other actions: `ADD_PLAYER/REMOVE_PLAYER/RENAME_PLAYER/REORDER_PLAYERS/SET_PLAYERS` (setup only),
 `UPDATE_SETTINGS {patch}` (any time; rule values are frozen into `round.config` at START_ROUND, so changes
-apply from the next round; `language`/`revealMethod` apply immediately), `ABORT_ROUND` (-> setup, keeps scores),
+apply from the next round; `language`/`wordLanguage`/`revealMethod` apply immediately), `ABORT_ROUND` (-> setup, keeps scores),
 `LOAD {state}` (replaces the state; runs `upgradeState`). Removing a player is not lossy: `REMOVE_PLAYER` moves
 them to `state.benched` and keeps their score, and `ADD_PLAYER` with a benched name (case-insensitive) reuses
 that id so the score and Imposter history return; `END_GAME` clears the bench. `scoreboard()` lists current
@@ -71,6 +71,10 @@ Snapshot validation (`isGameState`): a non-null round must have `word.word`, `co
 snapshot is dropped and the app boots fresh rather than rendering a blank phase screen.
 
 ## i18n
+
+Two language settings: `language` (app texts, layout direction) and `wordLanguage` ('auto' = same as the app,
+or a fixed 'en'/'he'); `wordLang(settings)` in engine.ts resolves the pack language, and word elements take
+`lang`/`dir="auto"` from the word's own script (`langOfText`). Only the Imposter's card shows the category.
 
 `useT()` returns `t(key, params)`; keys are flat strings (`'setup.title'`). Each messages module exports
 `{ en, he }` where `he: Record<keyof typeof en, string>` so a missing Hebrew key fails typecheck.

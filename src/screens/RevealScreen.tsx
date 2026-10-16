@@ -16,7 +16,7 @@ import { useGame } from '../game/store';
 import type { Player } from '../game/types';
 import { useReveal } from '../hooks/useReveal';
 import { useTapGuard } from '../hooks/useTapGuard';
-import { useT } from '../i18n';
+import { langOfText, useT } from '../i18n';
 import '../styles/game.css';
 
 export function RevealScreen() {
@@ -90,12 +90,12 @@ function RevealTurn({ player }: { player: Player }) {
                 <div className="secret-card__label">{t('reveal.secretWord')}</div>
                 <div
                   className={`secret-word ${wordSizeClass(round.word.word)}`.trim()}
-                  lang={state.settings.language}
+                  lang={langOfText(round.word.word)}
+                  dir="auto"
                   data-testid="secret-word"
                 >
                   {round.word.word}
                 </div>
-                <div className="secret-card__sub">{t('reveal.category', { name: round.categoryName })}</div>
               </>
             )}
           </SecretCard>

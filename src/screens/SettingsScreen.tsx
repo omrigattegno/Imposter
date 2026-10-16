@@ -8,10 +8,10 @@ import { Segmented } from '../components/Segmented';
 import { TopBar } from '../components/TopBar';
 import { BackButton } from '../components/pregame/BackButton';
 import { CustomPacks } from '../components/pregame/CustomPacks';
-import { languagePatch } from '../components/pregame/LanguageToggle';
+import { languagePatch, wordLanguagePatch } from '../components/pregame/LanguageToggle';
 import { OnOffSwitch, SettingRow } from '../components/pregame/SettingRow';
 import { useGame } from '../game/store';
-import type { Difficulty, Lang, Penalty, RevealMethod, Settings } from '../game/types';
+import type { Difficulty, Lang, Penalty, RevealMethod, Settings, WordLanguage } from '../game/types';
 import { useT, type MessageKey } from '../i18n';
 import { requestSensorPermission, useSensorPermission, type SensorPermission } from '../lib/sensors';
 import { useNav } from '../nav';
@@ -142,6 +142,20 @@ export function SettingsScreen() {
               { value: 'he', label: t('lang.he') },
             ]}
             onChange={(language) => patch(languagePatch(s, language))}
+          />
+        </SettingRow>
+
+        <SettingRow label={t('settings.wordLanguage')} hint={t('settings.wordLanguageHint')}>
+          <Segmented<WordLanguage>
+            aria-label={t('settings.wordLanguage')}
+            testId="settings-wordlang"
+            value={s.wordLanguage}
+            options={[
+              { value: 'auto', label: t('settings.wordLanguage.auto') },
+              { value: 'en', label: t('lang.en') },
+              { value: 'he', label: t('lang.he') },
+            ]}
+            onChange={(wordLanguage) => patch(wordLanguagePatch(s, wordLanguage))}
           />
         </SettingRow>
 

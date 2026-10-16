@@ -25,6 +25,7 @@ import {
   type Action,
   type Difficulty,
   type GameState,
+  type Lang,
   type Phase,
   type Player,
   type Rng,
@@ -37,6 +38,7 @@ import {
 
 export const DEFAULT_SETTINGS: Settings = {
   language: 'en',
+  wordLanguage: 'auto',
   categoryId: RANDOM_CATEGORY,
   imposterCount: 1,
   clueRounds: 2,
@@ -97,6 +99,11 @@ export function validatePlayerName(
   return null;
 }
 
+/** The language the secret words are drawn in ('auto' follows the app language). */
+export function wordLang(settings: Pick<Settings, 'language' | 'wordLanguage'>): Lang {
+  return settings.wordLanguage === 'he' || settings.wordLanguage === 'en' ? settings.wordLanguage : settings.language;
+}
+
 export function canStart(state: GameState): boolean {
   return state.players.length >= MIN_PLAYERS && state.players.length <= MAX_PLAYERS;
 }
@@ -155,8 +162,9 @@ export function drawWord(
   usedWords: readonly string[],
   rng: Rng,
 ): DrawnWord {
-  const langPacks = packs.filter((p) => p.lang === settings.language && p.words.length > 0);
-  if (langPacks.length === 0) throw new Error(`No word packs for language ${settings.language}`);
+  const lang = wordLang(settings);
+  const langPacks = packs.filter((p) => p.lang === lang && p.words.length > 0);
+  if (langPacks.length === 0) throw new Error(`No word packs for language ${lang}`);
   const used = new Set(usedWords);
   const levels = difficultyLevels(settings.difficulty);
 
@@ -481,7 +489,7 @@ export function reduce(state: GameState, action: Action): GameState {
         discussionEndsAt: null,
       };
       // Most recent draw last (a recycled word moves to the end) so drawWord knows each pack's last word.
-      const key = wordKey(s.language, action.categoryId, action.word.word);
+      const key = wordKey(wordLang(s), action.categoryId, action.word.word);
       return {
         ...state,
         phase: 'reveal',
@@ -574,6 +582,7 @@ export function sanitizeSettings(s: Settings): Settings {
   const discussion = s.discussionSeconds === 0 ? 0 : clamp(Math.round(s.discussionSeconds), 30, 180);
   return {
     language: s.language === 'he' ? 'he' : 'en',
+    wordLanguage: s.wordLanguage === 'he' || s.wordLanguage === 'en' ? s.wordLanguage : 'auto',
     categoryId: s.categoryId || RANDOM_CATEGORY,
     imposterCount: s.imposterCount === 2 ? 2 : 1,
     clueRounds: s.clueRounds === 1 || s.clueRounds === 3 ? s.clueRounds : 2,
