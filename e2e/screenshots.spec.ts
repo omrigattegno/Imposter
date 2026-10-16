@@ -34,6 +34,15 @@ async function shot(page: Page, name: string, fullPage = false): Promise<void> {
   await page.screenshot({ path: join(DIR, `${name}.png`), fullPage });
 }
 
+/**
+ * Results opens with a ~1.15 s sequence (drumroll, banner + unmask, then the outcome with confetti or
+ * the sad wobble); wait for the last stage and let the banner's bounce finish before capturing.
+ */
+async function waitForResultsOpening(page: Page): Promise<void> {
+  await expect(page.getByTestId('results-screen')).toHaveAttribute('data-stage', '2', { timeout: 10_000 });
+  await page.waitForTimeout(700);
+}
+
 test.describe.configure({ mode: 'serial' });
 
 test('pregame screens, English and Hebrew', async ({ page }) => {
@@ -48,6 +57,13 @@ test('pregame screens, English and Hebrew', async ({ page }) => {
   await openSetup(page);
   await addPlayers(page, PLAYERS);
   await shot(page, 'setup-en');
+
+  // The character picker for the first seat.
+  await page.getByTestId('player-avatar').first().click();
+  await expect(page.getByTestId('avatar-picker')).toBeVisible();
+  await shot(page, 'setup-picker-en');
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('avatar-picker')).toHaveCount(0);
 
   await page.getByTestId('setup-settings').click();
   await expect(page.getByTestId('settings-screen')).toBeVisible();
@@ -137,6 +153,7 @@ test('in-round screens, English, hold mode', async ({ page }) => {
   await page.getByTestId('guess-submit').click();
 
   await expect(page.getByTestId('results-screen')).toBeVisible();
+  await waitForResultsOpening(page);
   await shot(page, 'results-en');
   await shot(page, 'results-en-full', true);
 });
@@ -234,6 +251,95 @@ test('in-round screens, Hebrew: long word card and results', async ({ page }) =>
   await page.getByTestId('guess-giveup').click();
   await expect(page.getByTestId('results-screen')).toBeVisible();
   await expect(page.getByTestId('results-word')).toHaveText(HE_WORD);
+  await waitForResultsOpening(page);
   await shot(page, 'results-he');
   await shot(page, 'results-he-full', true);
 });
+
+/** Round 1 just finished in English; players carry their chosen characters. */
+const EN_PLAYERS = [
+  { id: 'p1', name: 'Alice', avatar: 'glow' },
+  { id: 'p2', name: 'Bob', avatar: 'hoop' },
+  { id: 'p3', name: 'Carol', avatar: 'fig' },
+  { id: 'p4', name: 'Dan', avatar: 'jet' },
+  { id: 'p5', name: 'Eve', avatar: 'kiwi' },
+];
+const EN_WORD = 'Penguin';
+function resultsSnapshot(winner: 'table' | 'imposter') {
+  const tableWin = winner === 'table';
+  return {
+    version: 1,
+    phase: 'results',
+    players: EN_PLAYERS,
+    settings: {
+      language: 'en',
+      wordLanguage: 'auto',
+      categoryId: 'animals',
+      imposterCount: 1,
+      clueRounds: 2,
+      discussionSeconds: 60,
+      imposterSeesCategory: true,
+      imposterGuess: true,
+      revealMethod: 'hold',
+      difficulty: 'normal',
+      penalty: 'dare',
+      sounds: false,
+    },
+    scores: tableWin ? { p1: 2, p2: 1, p3: 3, p4: 1, p5: 1 } : { p1: 1, p2: 0, p3: 6, p4: 0, p5: 0 },
+    round: {
+      number: 2,
+      word: { word: EN_WORD, category: 'animals', difficulty: 1, aliases: [] },
+      categoryId: 'animals',
+      categoryName: 'Animals',
+      order: ['p1', 'p2', 'p3', 'p4', 'p5'],
+      imposterIds: ['p3'],
+      starterId: 'p2',
+      config: { clueRounds: 2, discussionSeconds: 60, imposterSeesCategory: true, imposterGuess: true, penalty: 'dare' },
+      revealIndex: 4,
+      clueRound: 2,
+      clueTurn: 4,
+      voteIndex: 4,
+      votes: tableWin
+        ? { p1: 'p3', p2: 'p3', p3: 'p1', p4: 'p3', p5: 'p2' }
+        : { p1: 'p2', p2: 'p1', p3: 'p1', p4: 'p2', p5: 'p4' },
+      guess: tableWin ? 'Ostrich' : null,
+      outcome: tableWin
+        ? {
+            tally: { p3: 3, p1: 1, p2: 1 },
+            votedOutId: 'p3',
+            tie: false,
+            imposterCaught: true,
+            guessCorrect: false,
+            winner: 'table',
+            points: { p1: 1, p2: 1, p3: 0, p4: 1, p5: 1 },
+          }
+        : {
+            tally: { p1: 2, p2: 2, p4: 1 },
+            votedOutId: null,
+            tie: true,
+            imposterCaught: false,
+            guessCorrect: null,
+            winner: 'imposter',
+            points: { p1: 0, p2: 0, p3: 3, p4: 0, p5: 0 },
+          },
+      discussionEndsAt: null,
+    },
+    history: [{ number: 1, word: 'Giraffe', categoryId: 'animals', imposterIds: ['p1'], winner: tableWin ? 'table' : 'imposter' }],
+    usedWords: ['en:animals:Giraffe', `en:animals:${EN_WORD}`],
+  };
+}
+
+for (const winner of ['table', 'imposter'] as const) {
+  test(`results, English, ${winner} wins (opening sequence landed, Imposter unmasked)`, async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(([key, value]) => localStorage.setItem(key, value), [STATE_KEY, JSON.stringify(resultsSnapshot(winner))]);
+    await page.reload();
+    const results = page.getByTestId('results-screen');
+    await expect(results).toBeVisible();
+    await expect(page.getByTestId('results-banner')).toHaveAttribute('data-winner', winner);
+    await waitForResultsOpening(page);
+    await expect(page.getByTestId('results-banner').locator('svg[data-avatar="fig"]')).toHaveAttribute('data-unmasked', 'true');
+    await shot(page, `results-${winner}-win`);
+    await shot(page, `results-${winner}-win-full`, true);
+  });
+}

@@ -12,7 +12,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:screenshots": "playwright test -c playwright.screenshots.config.ts",
-    "icons": "node scripts/make-icons.mjs"
+    "icons": "node scripts/render-icon.mjs"
   },
   "dependencies": {
     "react": "^19.0.0",

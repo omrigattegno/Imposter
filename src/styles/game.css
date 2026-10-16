@@ -1,5 +1,8 @@
 /* In-round screens: Pass-to, Reveal, Clues, Discussion, Vote, Guess, Results, GameMenu.
-   Dark, calm, huge type the table reads from a distance. Logical properties only so RTL mirrors. */
+   "Cute & rounded": chunky cards on a toy edge, the cast of masked avatars on every screen, big type
+   the table reads from a distance. The reveal card stays pure black so the viewing angle stays narrow.
+   Logical properties only so RTL mirrors; every loop and entrance is switched off under
+   prefers-reduced-motion in the block at the end. */
 
 /* ---------- layout helpers ---------- */
 /* Double-tap guard (hooks/useTapGuard): a phase-advancing button is disabled for a moment after mount
@@ -21,23 +24,70 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-2);
   min-height: var(--tap);
   margin-bottom: var(--space-2);
 }
+/* Progress pill: seat dots + "2 of 6". */
 .game-chrome__label,
 .pass__progress {
-  color: var(--text-faint);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding-inline: var(--space-3);
+  border-radius: 999px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  color: var(--text-muted);
   font-size: var(--fs-s);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.22);
 }
+.pdots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pdots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--line-strong);
+  transition: background 160ms var(--ease), transform 160ms var(--ease);
+}
+.pdots i.is-done {
+  background: var(--success);
+}
+.pdots i.is-current {
+  background: var(--accent);
+  transform: scale(1.35);
+}
+/* The menu trigger is a round coin (TopBar styles it the same in its slot). */
 .game-menu__trigger {
-  font-size: var(--fs-xl);
+  font-size: 26px;
   line-height: 1;
-  color: var(--text-muted);
+  letter-spacing: -0.06em;
   min-width: var(--tap);
+  min-height: var(--tap);
   padding: 0 var(--space-2);
+  border-radius: 999px;
+}
+.game-chrome .game-menu__trigger {
+  background: var(--bg-elev);
+  color: var(--text);
+  box-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.game-chrome .game-menu__trigger:active {
+  transform: translateY(2px);
+  background: var(--bg-elev-2);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 .game-actions {
   display: flex;
@@ -59,26 +109,17 @@
 .card {
   background: var(--bg-elev);
   border: 1px solid var(--line);
-  border-radius: var(--radius-m);
+  border-radius: var(--radius-l);
   padding: var(--space-4);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.18);
 }
 .card__title {
   font-size: var(--fs-s);
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
   margin-bottom: var(--space-3);
-}
-.card__row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  min-height: 32px;
-}
-.card__row + .card__row {
-  border-top: 1px solid var(--line);
 }
 .muted {
   color: var(--text-muted);
@@ -95,7 +136,7 @@
   padding: 1px var(--space-2);
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.4;
   vertical-align: middle;
   text-transform: uppercase;
@@ -104,6 +145,21 @@
 .badge--imposter {
   background: color-mix(in srgb, var(--danger) 22%, transparent);
   color: var(--danger);
+}
+/* Small pill used for counters ("Clue round 1 of 2"). */
+.round-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding-inline: var(--space-4);
+  border-radius: 999px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  color: var(--text-muted);
+  font-size: var(--fs-s);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.22);
 }
 
 /* ---------- ring ---------- */
@@ -128,7 +184,9 @@
   fill: none;
   stroke: var(--accent);
   stroke-linecap: round;
-  transition: stroke-dashoffset 120ms linear, stroke 300ms;
+  transition:
+    stroke-dashoffset 120ms linear,
+    stroke 300ms;
 }
 .ring--danger .ring__fill {
   stroke: var(--danger);
@@ -152,14 +210,43 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: var(--space-4);
-  padding-block: var(--space-6);
-  animation: fade-in 240ms var(--ease);
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+}
+/* The avatar floats on a soft disc of light. */
+.pass__avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 188px;
+  height: 188px;
+  margin-bottom: var(--space-1);
+}
+.pass__avatar::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--accent-2) 30%, transparent), transparent 70%);
+}
+.pass__avatar::after {
+  content: '';
+  position: absolute;
+  bottom: 14px;
+  width: 96px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+  filter: blur(3px);
+  animation: pass-shadow 2.8s ease-in-out infinite;
+}
+.pass__avatar .avatar {
+  position: relative;
 }
 .pass__label {
   color: var(--text-muted);
   font-size: var(--fs-l);
-  font-weight: 600;
+  font-weight: 700;
 }
 .pass__name {
   font-size: var(--fs-xxl);
@@ -176,10 +263,10 @@
   text-wrap: balance;
 }
 .pass__ring {
-  margin-top: var(--space-3);
+  margin-top: var(--space-2);
 }
 .pass__count {
-  font-size: 48px;
+  font-size: 44px;
 }
 
 /* ---------- secret card (reveal / vote) ---------- */
@@ -191,8 +278,8 @@
   justify-content: center;
   gap: var(--space-3);
   min-height: 40dvh;
-  /* extra top padding keeps the absolutely positioned name line clear of a tall ballot */
-  padding: calc(var(--space-5) + 20px) var(--space-4) var(--space-5);
+  /* extra top padding keeps the absolutely positioned head clear of a tall ballot */
+  padding: calc(var(--space-5) + 28px) var(--space-4) var(--space-5);
   border-radius: var(--radius-l);
   background: var(--card-secret-bg);
   color: var(--card-secret-text);
@@ -202,13 +289,42 @@
   text-align: center;
   -webkit-touch-callout: none;
   touch-action: manipulation;
+  transition: border-color 200ms var(--ease);
+}
+/* Shown: scale in from .96 and breathe a glow in the card's colour (accent, danger for IMPOSTER). */
+.secret-card.is-revealed {
+  border-color: color-mix(in srgb, var(--glow-color, var(--accent)) 55%, transparent);
+  animation:
+    secret-pop 280ms var(--ease-bounce) both,
+    secret-glow 1.8s ease-in-out 280ms infinite;
+}
+.secret-card__head {
+  position: absolute;
+  top: var(--space-2);
+  inset-inline: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 36px;
+}
+.secret-card__face {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.secret-card__face .avatar {
+  margin-top: 4px;
 }
 .secret-card__name {
-  position: absolute;
-  top: var(--space-3);
-  inset-inline: var(--space-4);
+  min-width: 0;
   font-size: var(--fs-s);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -221,7 +337,9 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  transition: filter 150ms var(--ease), opacity 150ms var(--ease);
+  transition:
+    filter 150ms var(--ease),
+    opacity 150ms var(--ease);
   filter: blur(0);
   opacity: 1;
 }
@@ -251,7 +369,7 @@
 }
 .secret-card__label {
   font-size: var(--fs-s);
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -298,59 +416,128 @@
   max-width: 32ch;
   text-wrap: balance;
 }
+.reveal-controls__hint--lift {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+.reveal-controls__glyph {
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  color: var(--accent-2);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.22);
+}
+.reveal-controls__glyph svg {
+  width: 30px;
+  height: 30px;
+}
+.reveal-controls__glyph--lift svg {
+  animation: lift-nudge 2.2s ease-in-out infinite;
+}
+.reveal-controls__hint--lift.is-lifted .reveal-controls__glyph {
+  color: var(--accent);
+  border-color: var(--accent);
+}
 .reveal-controls__fallback {
   min-height: var(--tap);
   color: var(--text-faint);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* Hold-to-reveal: a wide toy key that sinks into its edge while held and lights up yellow. */
 .hold-btn {
+  --hold-edge: #151c3d;
   width: 100%;
   min-height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-4);
   border-radius: var(--radius-l);
   background: var(--bg-elev-2);
   color: var(--text);
-  border: 2px dashed var(--line-strong);
   font-size: var(--fs-l);
-  font-weight: 700;
-  transition: background 120ms var(--ease), border-color 120ms var(--ease), transform 120ms var(--ease);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  box-shadow:
+    0 6px 0 var(--hold-edge),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition:
+    background 120ms var(--ease),
+    color 120ms var(--ease),
+    transform 90ms var(--ease),
+    box-shadow 90ms var(--ease);
+  /* A slightly moving thumb must not start a pan (pointercancel) and drop the card. */
+  touch-action: none;
+}
+.hold-btn > * {
+  pointer-events: none;
+}
+.hold-btn__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+}
+.hold-btn__icon svg {
+  width: 32px;
+  height: 32px;
 }
 .hold-btn.is-active {
   background: var(--accent);
   color: var(--accent-ink);
-  border-style: solid;
-  border-color: var(--accent);
-  transform: scale(0.98);
+  transform: translateY(4px);
+  box-shadow:
+    0 2px 0 var(--accent-deep),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 .hold-btn:focus-visible {
-  outline: 2px solid var(--accent-2);
-  outline-offset: 2px;
+  outline: 3px solid var(--accent-2);
+  outline-offset: 3px;
 }
 .reveal__pass {
-  min-height: 72px;
+  min-height: 80px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
 }
-.reveal__pass .btn {
-  animation: rise-in 220ms var(--ease);
-}
 
 /* ---------- clues ---------- */
 .clues__round {
-  color: var(--text-muted);
-  font-weight: 600;
   text-align: center;
 }
-.clues__speaker {
+.clues__stage {
   text-align: center;
-  padding-block: var(--space-4);
+}
+.clues__scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.clues__avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 156px;
+  height: 156px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 70%);
 }
 .clues__speaker-label {
   color: var(--text-muted);
   font-size: var(--fs-l);
-  font-weight: 600;
-  margin-bottom: var(--space-2);
+  font-weight: 700;
+  margin-bottom: var(--space-1);
 }
 .clues__speaker-name {
   font-size: var(--fs-xxl);
@@ -366,56 +553,141 @@
   margin-inline: auto;
   text-wrap: balance;
 }
+/* Speech bubble: a white rounded box with a tail pointing down at the speaker. */
+.bubble {
+  position: relative;
+  max-width: min(100%, 32ch);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-m);
+  background: var(--text);
+  color: var(--ink);
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  text-wrap: balance;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.22);
+  animation: bubble-in 320ms var(--ease-bounce) both;
+  transform-origin: 50% 100%;
+}
+.bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  inset-inline-start: calc(50% - 9px);
+  border: 9px solid transparent;
+  border-top: 10px solid var(--text);
+  border-bottom: 0;
+}
+.bubble--dots {
+  min-width: 88px;
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+}
+.bubble__dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 20px;
+}
+.bubble__dots i {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ink);
+  animation: dot-bounce 1.1s ease-in-out infinite;
+}
+.bubble__dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.bubble__dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+/* Turn order: a wrapping row of seats. */
 .turn-list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: var(--space-2) 0 0;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--space-3) var(--space-1);
 }
-.turn-chip {
-  display: inline-flex;
+.turn-seat {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--space-2);
-  min-height: 40px;
-  padding-inline: var(--space-2) var(--space-3);
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--bg-elev);
-  color: var(--text-muted);
-  font-size: var(--fs-s);
-  font-weight: 600;
-  transition: background 160ms var(--ease), border-color 160ms var(--ease), color 160ms var(--ease);
+  gap: 3px;
+  width: 62px;
+  transition:
+    transform 220ms var(--ease-bounce),
+    opacity 220ms var(--ease);
 }
-.turn-chip__n {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
+.turn-seat__face {
+  position: relative;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
+  background: var(--bg-elev);
+  border: 2px solid var(--line);
+  display: grid;
+  place-items: center;
+  transition:
+    border-color 160ms var(--ease),
+    background 160ms var(--ease),
+    box-shadow 160ms var(--ease);
+}
+.turn-seat__face .avatar {
+  margin-top: 3px;
+}
+.turn-seat__n {
+  position: absolute;
+  inset-block-end: -5px;
+  inset-inline-end: -5px;
+  min-width: 19px;
+  height: 19px;
+  padding-inline: 4px;
+  border-radius: 999px;
   background: var(--bg-elev-2);
-  font-size: 13px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 19px;
+  text-align: center;
   font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
 }
-.turn-chip.is-done {
-  color: var(--text-faint);
+.turn-seat__name {
+  max-width: 100%;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.turn-chip.is-done .turn-chip__n {
-  background: color-mix(in srgb, var(--success) 25%, transparent);
-  color: var(--success);
+.turn-seat.is-done {
+  opacity: 0.45;
 }
-.turn-chip.is-current {
+.turn-seat.is-done .turn-seat__n {
+  background: var(--success);
+  color: var(--ink);
+}
+.turn-seat.is-current {
+  transform: translateY(-6px) scale(1.08);
+}
+.turn-seat.is-current .turn-seat__face {
   border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 16%, transparent);
-  color: var(--text);
-  transform: scale(1.04);
+  background: color-mix(in srgb, var(--accent) 18%, var(--bg-elev));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent);
 }
-.turn-chip.is-current .turn-chip__n {
+.turn-seat.is-current .turn-seat__n {
   background: var(--accent);
   color: var(--accent-ink);
+}
+.turn-seat.is-current .turn-seat__name {
+  color: var(--text);
 }
 
 /* ---------- discussion ---------- */
@@ -425,11 +697,52 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-5);
+  gap: var(--space-4);
   text-align: center;
 }
+/* The table around the timer: avatars on a circle (AvatarRing). */
+.avatar-ring {
+  position: relative;
+  width: var(--ar-size);
+  height: var(--ar-size);
+  max-width: 100%;
+  margin-inline: auto;
+}
+.avatar-ring__centre {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.avatar-ring__seats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.avatar-ring__seat {
+  position: absolute;
+  width: var(--av-size);
+  height: var(--av-size);
+  /* centred on its point with margins (physical, like left/top), leaving transform to the animation */
+  margin: calc(var(--av-size) / -2) 0 0 calc(var(--av-size) / -2);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--bg-elev);
+  border: 2px solid var(--line);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.22);
+}
+.avatar-ring__seat .avatar {
+  margin-top: 3px;
+}
 .discussion__ring .ring__label {
-  font-size: clamp(44px, 14vw, 64px);
+  font-size: clamp(40px, 12vw, 56px);
+}
+.discussion__ring .ring__track {
+  stroke: var(--bg-elev-2);
 }
 .discussion__ring.is-done .ring__label {
   font-size: var(--fs-xl);
@@ -456,8 +769,11 @@
 }
 .ballot__question {
   font-size: var(--fs-l);
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.2;
+}
+.ballot__pick {
+  color: var(--text-muted);
   margin-bottom: var(--space-1);
 }
 .ballot__opts {
@@ -476,61 +792,127 @@
   grid-template-columns: 1fr 1fr;
 }
 .ballot__opt {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
+  gap: var(--space-3);
   width: 100%;
-  min-height: 52px;
-  padding-inline: var(--space-4) var(--space-3);
-  border-radius: var(--radius-m);
-  border: 1px solid var(--line-strong);
+  min-height: 58px;
+  padding-inline: 7px var(--space-4);
+  border-radius: 999px;
+  border: 2px solid var(--line-strong);
   background: var(--bg-elev-2);
   color: var(--text);
   font-size: var(--fs-m);
-  font-weight: 600;
+  font-weight: 700;
   text-align: start;
-  transition: background 120ms var(--ease), border-color 120ms var(--ease), transform 120ms var(--ease);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+  transition:
+    background 120ms var(--ease),
+    border-color 120ms var(--ease),
+    transform 90ms var(--ease),
+    box-shadow 90ms var(--ease);
+}
+/* Every pointer event targets the button itself (the ballot listens for pointerup on it). */
+.ballot__opt > * {
+  pointer-events: none;
 }
 .ballot__opt:active {
-  transform: scale(0.98);
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+.ballot__opt-face {
+  position: relative;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--bg-pop);
+  display: grid;
+  place-items: center;
+}
+.ballot__opt-face .avatar {
+  margin-top: 3px;
 }
 .ballot__opt-name {
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .ballot__opt-check {
-  flex: 0 0 auto;
-  width: 24px;
-  height: 24px;
+  position: absolute;
+  inset-block-end: -4px;
+  inset-inline-end: -4px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  border: 2px solid var(--line-strong);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 800;
-  color: transparent;
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 1px 0 var(--accent-deep);
+  opacity: 0;
+  transform: scale(0.4);
+  transition:
+    opacity 120ms var(--ease),
+    transform 200ms var(--ease-bounce);
+}
+.ballot__opt-check svg {
+  width: 14px;
+  height: 14px;
 }
 .ballot__opt.is-selected {
   border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 18%, var(--bg-elev-2));
+  background: color-mix(in srgb, var(--accent) 20%, var(--bg-elev-2));
+  box-shadow: 0 4px 0 var(--accent-deep);
 }
 .ballot__opt.is-selected .ballot__opt-check {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
+  opacity: 1;
+  transform: scale(1);
+}
+.ballot__opt.is-selected .ballot__opt-face .avatar {
+  animation: hop 460ms var(--ease-bounce);
 }
 .vote__lock {
   min-height: 72px;
 }
 
 /* ---------- guess ---------- */
+.guess__hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-block: var(--space-2) var(--space-3);
+}
+.guess__avatar {
+  display: grid;
+  place-items: center;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--danger) 30%, transparent), transparent 70%);
+}
+/* "Caught!" as a tilted sticker on the avatar's shoulder. */
 .guess__title {
-  font-size: var(--fs-xl);
-  font-weight: 800;
-  text-align: center;
+  position: absolute;
+  top: 4px;
+  inset-inline-start: calc(50% + 34px);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: var(--fs-l);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  box-shadow: 0 4px 0 var(--danger-deep);
+  rotate: 8deg;
+}
+[dir='rtl'] .guess__title {
+  rotate: -8deg;
 }
 .guess__prompt {
   text-align: center;
@@ -540,7 +922,7 @@
 .guess__category {
   text-align: center;
   color: var(--text-faint);
-  font-weight: 600;
+  font-weight: 700;
 }
 .guess__form {
   display: flex;
@@ -549,52 +931,154 @@
 }
 .guess__input {
   width: 100%;
-  min-height: 56px;
+  min-height: 60px;
   padding: 0 var(--space-4);
   border-radius: var(--radius-m);
-  border: 1px solid var(--line-strong);
+  border: 2px solid var(--line-strong);
   background: var(--bg-elev);
   color: var(--text);
   font-size: var(--fs-l);
+  font-weight: 700;
   text-align: center;
   outline: none;
+  box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.18);
+  transition:
+    border-color 120ms var(--ease),
+    box-shadow 120ms var(--ease);
 }
 .guess__input:focus-visible {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+  box-shadow:
+    inset 0 3px 0 rgba(0, 0, 0, 0.18),
+    0 0 0 4px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 .guess__input::placeholder {
   color: var(--text-faint);
+  font-weight: 600;
 }
 
 /* ---------- results ---------- */
 .results__banner {
+  --spot: var(--accent);
+  position: relative;
+  overflow: hidden;
   text-align: center;
-  padding: var(--space-5) var(--space-4);
-  border-radius: var(--radius-l);
+  padding: var(--space-4) var(--space-4) var(--space-4);
+  border-radius: var(--radius-xl);
   border: 1px solid var(--line);
   background: var(--bg-elev);
-  animation: rise-in 300ms var(--ease);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.22);
+}
+/* Before the banner's turn in the opening sequence it is laid out but invisible (no reflow later). */
+.results__banner.is-waiting {
+  opacity: 0;
 }
 .results__banner--table {
+  --spot: var(--success);
   border-color: color-mix(in srgb, var(--success) 50%, transparent);
-  background: color-mix(in srgb, var(--success) 12%, var(--bg-elev));
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 0%, color-mix(in srgb, var(--success) 16%, transparent), transparent 70%),
+    var(--bg-elev);
 }
 .results__banner--imposter {
+  --spot: var(--danger);
   border-color: color-mix(in srgb, var(--danger) 50%, transparent);
-  background: color-mix(in srgb, var(--danger) 12%, var(--bg-elev));
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 0%, color-mix(in srgb, var(--danger) 16%, transparent), transparent 70%),
+    var(--bg-elev);
+}
+/* Spotlight: a disc of light with a slowly turning dashed rim; the Imposter stands in it. */
+.results__spotlight {
+  position: relative;
+  width: 172px;
+  height: 172px;
+  margin: 0 auto var(--space-2);
+  border-radius: 50%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--space-2);
+  padding-bottom: 10px;
+  background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--spot) 38%, transparent), transparent 68%);
+}
+.results__spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 2px dashed color-mix(in srgb, var(--spot) 45%, transparent);
+  animation: spin 16s linear infinite;
+}
+.results__spotlight .avatar {
+  position: relative;
+}
+.results__sticker {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: -12px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: var(--fs-s);
+  font-weight: 900;
+  white-space: nowrap;
+  box-shadow: 0 3px 0 var(--accent-deep);
+  rotate: 10deg;
+}
+[dir='rtl'] .results__sticker {
+  rotate: -10deg;
+}
+.results__imposters {
+  color: var(--danger);
+  font-weight: 800;
+  margin-bottom: var(--space-3);
 }
 .results__winner {
+  /* Inline, not flex: when "The Imposter wins!" wraps to two lines the sparkle stays glued to the
+     first word instead of floating centred beside the block. */
+  display: block;
+  text-align: center;
   font-size: var(--fs-xl);
   font-weight: 800;
   line-height: 1.15;
+}
+.results__sparkle {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  vertical-align: -0.1em;
+  margin-inline-end: var(--space-2);
+  color: var(--spot);
 }
 .results__sub {
   margin-top: var(--space-2);
   color: var(--text-muted);
 }
+/* The rest of the table, reacting to the outcome. */
+.results__table {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+}
+.results__seat {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bg-elev-2) 70%, transparent);
+  border: 2px solid var(--line);
+}
+.results__seat .avatar {
+  margin-top: 3px;
+}
 .results__voted {
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: var(--space-2);
 }
 .tally {
@@ -603,25 +1087,66 @@
   padding: 0;
 }
 .tally__row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-3);
-  min-height: 36px;
+  min-height: 48px;
+  padding-block: var(--space-1);
 }
 .tally__row + .tally__row {
   border-top: 1px solid var(--line);
+}
+.tally__face {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-elev-2);
+  display: grid;
+  place-items: center;
+}
+.tally__face .avatar {
+  margin-top: 3px;
+}
+.tally__main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 .tally__name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 600;
 }
 .tally__row.is-out .tally__name {
-  font-weight: 700;
+  font-weight: 800;
+}
+.tally__bar {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-elev-2);
+  overflow: hidden;
+}
+.tally__bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent-2);
+  animation: bar-grow 600ms var(--ease) 300ms both;
+  transform-origin: 0 50%;
+}
+[dir='rtl'] .tally__bar i {
+  transform-origin: 100% 50%;
+}
+.tally__row.is-out .tally__bar i {
+  background: var(--danger);
 }
 .tally__count {
   color: var(--text-muted);
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   flex: 0 0 auto;
 }
@@ -634,15 +1159,10 @@
   text-align: center;
   margin-block: var(--space-2);
 }
-.results__imposters {
-  text-align: center;
-  color: var(--danger);
-  font-weight: 700;
-}
 .results__guess {
   text-align: center;
   margin-top: var(--space-3);
-  font-weight: 600;
+  font-weight: 700;
 }
 .results__guess--correct {
   color: var(--success);
@@ -655,33 +1175,32 @@
   margin: 0;
   padding: 0;
 }
-.scoreboard__row {
+.scoreboard__row,
+.scoreboard__head {
   display: grid;
-  grid-template-columns: 28px 1fr auto auto;
+  grid-template-columns: 22px 44px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: var(--space-2);
-  min-height: 40px;
   padding-inline: var(--space-1);
+}
+.scoreboard__row {
+  min-height: 52px;
   border-radius: var(--radius-s);
 }
 .scoreboard__row + .scoreboard__row {
   border-top: 1px solid var(--line);
 }
 .scoreboard__head {
-  display: grid;
-  grid-template-columns: 28px 1fr auto auto;
-  gap: var(--space-2);
-  padding-inline: var(--space-1);
   padding-bottom: var(--space-1);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 .scoreboard__head .scoreboard__earned,
 .scoreboard__head .scoreboard__total {
   color: var(--text-faint);
-  font-weight: 600;
+  font-weight: 700;
 }
 .scoreboard__row.is-leader {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
@@ -689,20 +1208,63 @@
 }
 .scoreboard__rank {
   color: var(--text-faint);
-  font-weight: 700;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.scoreboard__face {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--bg-elev-2);
+  display: grid;
+  place-items: center;
+}
+.scoreboard__face .avatar {
+  margin-top: 3px;
+}
+/* A pure-CSS crown perched on the leader's head. */
+.crown {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 24px;
+  height: 16px;
+  margin-left: -12px;
+  background: var(--accent);
+  clip-path: polygon(0 100%, 0 22%, 26% 52%, 50% 0, 74% 52%, 100% 22%, 100% 100%);
+  rotate: -8deg;
+  z-index: 1;
+  animation: crown-in 460ms var(--ease-bounce) 600ms both;
 }
 .scoreboard__name {
+  /* Name + badge may wrap (the badge drops under a long name at 390px) instead of ellipsising the
+     badge away; only the name text itself is clipped when it alone is too long. */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--space-2);
+  row-gap: 2px;
+  min-width: 0;
+  font-weight: 700;
+}
+.scoreboard__name-text {
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 600;
+}
+.scoreboard__name .badge {
+  flex: none;
+  margin-inline-start: 0;
 }
 .scoreboard__earned {
   min-width: 2.5ch;
   text-align: end;
   color: var(--success);
-  font-weight: 700;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
   /* "+1" is a neutral sign plus a digit: isolate it as LTR so RTL text does not reorder it to "1+". */
   direction: ltr;
@@ -723,42 +1285,113 @@
 .penalty--drink {
   border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
+.penalty__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.penalty__glyph {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent-2);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-2) 25%, transparent);
+}
+.penalty--drink .penalty__glyph {
+  background: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent);
+}
 .penalty__prompt {
   font-size: var(--fs-l);
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.3;
   text-wrap: balance;
 }
 .penalty__losers {
-  margin-top: var(--space-2);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
   color: var(--text-muted);
 }
+.penalty__faces {
+  display: inline-flex;
+}
+.penalty__faces .avatar + .avatar {
+  margin-inline-start: -8px;
+}
 
-/* ---------- action sheet (GameMenu) ---------- */
+/* ---------- bottom sheet (GameMenu) ---------- */
 .sheet__backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(6, 8, 22, 0.66);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: var(--space-4);
-  padding-bottom: calc(var(--safe-bottom) + var(--space-4));
   z-index: 50;
-  animation: fade-in 160ms var(--ease);
+  animation: fade-in 180ms var(--ease) both;
 }
+/* ::before is the grab handle, ::after a solid tail so the bounce overshoot never shows the backdrop. */
 .sheet {
+  position: relative;
   width: 100%;
-  max-width: 480px;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
   background: var(--bg-elev);
   border: 1px solid var(--line);
-  border-radius: var(--radius-l);
-  padding: var(--space-4);
+  border-bottom: 0;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: var(--space-3) var(--space-4) calc(var(--safe-bottom) + var(--space-4) + 6px);
   box-shadow: var(--shadow);
-  animation: rise-in 200ms var(--ease);
+  animation: sheet-rise 380ms var(--ease-bounce) both;
+}
+.sheet::before {
+  content: '';
+  display: block;
+  width: 44px;
+  height: 5px;
+  margin: 0 auto var(--space-1);
+  border-radius: 999px;
+  background: var(--line-strong);
+}
+.sheet::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background: var(--bg-elev);
+}
+.sheet__title {
+  text-align: center;
+  font-size: var(--fs-s);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.sheet__cancel {
+  margin-top: var(--space-1);
+}
+@media (min-width: 600px) {
+  .sheet__backdrop {
+    align-items: center;
+    padding: var(--space-4);
+  }
+  .sheet {
+    border-bottom: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    padding-bottom: var(--space-4);
+  }
+  .sheet::after {
+    display: none;
+  }
 }
 
 /* ---------- motion ---------- */
@@ -778,5 +1411,153 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+@keyframes sheet-rise {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes secret-pop {
+  from {
+    transform: scale(0.96);
+  }
+  60% {
+    transform: scale(1.012);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes secret-glow {
+  0%,
+  100% {
+    box-shadow:
+      var(--shadow),
+      0 0 26px 2px color-mix(in srgb, var(--glow-color, var(--accent)) 30%, transparent);
+  }
+  50% {
+    box-shadow:
+      var(--shadow),
+      0 0 0 4px color-mix(in srgb, var(--glow-color, var(--accent)) 22%, transparent),
+      0 0 48px 10px color-mix(in srgb, var(--glow-color, var(--accent)) 48%, transparent);
+  }
+}
+@keyframes pass-shadow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(0.82);
+    opacity: 0.22;
+  }
+}
+@keyframes lift-nudge {
+  0%,
+  55%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-3px) rotate(-8deg);
+  }
+}
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: scale(0.7) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes dot-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+@keyframes hop {
+  0% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: translateY(-9px) scale(1.06);
+  }
+  70% {
+    transform: translateY(1px) scale(0.98);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes crown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Reduced motion: no loops, no entrances; everything sits in its resting state (base.css already
+   shortens every animation, this makes the intent explicit and keeps the static glow). */
+@media (prefers-reduced-motion: reduce) {
+  .pass__avatar::after,
+  .reveal-controls__glyph--lift svg,
+  .bubble,
+  .bubble__dots i,
+  .results__spotlight::before,
+  .tally__bar i,
+  .crown,
+  .ballot__opt.is-selected .ballot__opt-face .avatar,
+  .discussion__timeup,
+  .sheet__backdrop,
+  .sheet {
+    animation: none;
+  }
+  .secret-card.is-revealed {
+    animation: none;
+    box-shadow:
+      var(--shadow),
+      0 0 32px 4px color-mix(in srgb, var(--glow-color, var(--accent)) 36%, transparent);
+  }
+  .results__banner.is-waiting {
+    opacity: 1;
+  }
+  .turn-seat,
+  .pdots i,
+  .ballot__opt-check,
+  .hold-btn,
+  .ballot__opt,
+  .secret-card__body {
+    transition: none;
   }
 }

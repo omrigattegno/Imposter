@@ -1,6 +1,7 @@
 /**
  * Discussion timer: a big m:ss countdown derived from an end timestamp (never a decrementing
- * counter), a progress ring, one beep + vibration at DISCUSSION_BEEP_AT_SECONDS, an end beep at zero.
+ * counter) inside a progress ring, the whole table's avatars thinking around it (the ring pulses
+ * through the last DISCUSSION_BEEP_AT_SECONDS), one beep + vibration at that mark, an end beep at zero.
  * The screen never advances by itself: "Vote now" is available throughout and becomes the primary
  * "Vote" button once time is up (DISCUSSION_DONE). The deadline lives in the round
  * (round.discussionEndsAt, set once by DISCUSSION_START on the first mount) so a reload, a remount or
@@ -10,6 +11,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '../components/Button';
 import { GameMenu } from '../components/GameMenu';
 import { TopBar } from '../components/TopBar';
+import { AvatarRing } from '../components/game/AvatarRing';
+import { useAvatars } from '../components/game/avatarOf';
 import { Ring } from '../components/game/Ring';
 import { formatClock, useCountdown } from '../components/game/useCountdown';
 import { DISCUSSION_BEEP_AT_SECONDS } from '../game/constants';
@@ -22,6 +25,7 @@ import '../styles/game.css';
 export function DiscussionScreen() {
   const t = useT();
   const { state, dispatch } = useGame();
+  const avatarOf = useAvatars();
   const round = state.round;
   const totalSeconds = Math.max(1, round?.config.discussionSeconds ?? 60);
   const totalMs = totalSeconds * 1000;
@@ -60,6 +64,8 @@ export function DiscussionScreen() {
   const done = remaining <= 0;
   const seconds = Math.ceil(remaining / 1000);
   const clock = formatClock(seconds);
+  const lastSeconds = !done && seconds <= DISCUSSION_BEEP_AT_SECONDS;
+  const seats = round.order.map((id) => ({ id, avatar: avatarOf(id) }));
 
   const onVote = () => {
     unlockAudio();
@@ -67,23 +73,25 @@ export function DiscussionScreen() {
   };
 
   return (
-    <main className="screen discussion-screen" data-testid="discussion-screen">
+    <main className="screen discussion-screen anim-screen-enter" data-testid="discussion-screen">
       <TopBar title={t('common.round', { n: round.number })} trailing={<GameMenu />} />
 
       <section className="discussion">
         <h2 className="pass__label">{t('discussion.title')}</h2>
-        <Ring
-          fraction={remaining / totalMs}
-          size={240}
-          stroke={12}
-          danger={seconds <= DISCUSSION_BEEP_AT_SECONDS}
-          className={`discussion__ring ${done ? 'is-done' : ''}`.trim()}
-          ariaLabel={done ? t('discussion.timeUp') : t('discussion.remaining', { time: clock })}
-        >
-          <span aria-hidden="true" data-testid="discussion-clock">
-            {clock}
-          </span>
-        </Ring>
+        <AvatarRing seats={seats} mood={done ? 'shocked' : 'think'} size={48} radius={122} className="discussion__table">
+          <Ring
+            fraction={remaining / totalMs}
+            size={172}
+            stroke={12}
+            danger={seconds <= DISCUSSION_BEEP_AT_SECONDS}
+            className={`discussion__ring ${done ? 'is-done' : ''} ${lastSeconds ? 'anim-pulse' : ''}`.trim()}
+            ariaLabel={done ? t('discussion.timeUp') : t('discussion.remaining', { time: clock })}
+          >
+            <span className="tabular" aria-hidden="true" data-testid="discussion-clock">
+              {clock}
+            </span>
+          </Ring>
+        </AvatarRing>
         {done ? (
           <p className="discussion__timeup" role="status">
             {t('discussion.timeUp')}

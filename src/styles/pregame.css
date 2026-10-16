@@ -221,9 +221,13 @@
   width: 176px;
 }
 .home__hero {
+  /* Grows on a tall phone so the logo + huddle sit centred and the buttons move towards the thumb,
+     instead of leaving the bottom third of a fresh launch (no last players yet) empty. */
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
   padding-block: var(--space-4) var(--space-3);
 }

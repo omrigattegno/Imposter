@@ -3,11 +3,15 @@
  * disarmed), then their private card. The secret is in the DOM only while useReveal says `revealed`.
  * "Got it, pass" appears PASS_BUTTON_DELAY_MS after the first reveal of the turn and is the only
  * thing that advances (REVEAL_NEXT); lowering the phone just hides the card again.
+ * The card carries the player's avatar: sneaky behind the mask on the IMPOSTER card, happy on the word
+ * card, idle (never telling) while the card is hidden (SecretCard enforces that).
  */
 import { useEffect, useState } from 'react';
 import { Button } from '../components/Button';
 import { GameMenu } from '../components/GameMenu';
+import { useAvatars } from '../components/game/avatarOf';
 import { PassTo } from '../components/game/PassTo';
+import { ProgressDots } from '../components/game/ProgressDots';
 import { RevealControls } from '../components/game/RevealControls';
 import { SecretCard, wordSizeClass } from '../components/game/SecretCard';
 import { PASS_BUTTON_DELAY_MS } from '../game/constants';
@@ -31,6 +35,7 @@ export function RevealScreen() {
 function RevealTurn({ player }: { player: Player }) {
   const t = useT();
   const { state, dispatch } = useGame();
+  const avatarOf = useAvatars();
   const round = state.round;
   const [armed, setArmed] = useState(false);
   const { revealed, effectiveMethod, permission, holdProps, needsLower } = useReveal({
@@ -55,22 +60,30 @@ function RevealTurn({ player }: { player: Player }) {
 
   if (!round) return null;
   const imposter = isImposter(state, player.id);
+  const avatar = avatarOf(player.id);
   const progress = t('reveal.progress', { current: round.revealIndex + 1, total: round.order.length });
 
   return (
-    <main className="screen reveal" data-testid="reveal-screen">
+    <main className="screen reveal anim-screen-enter" data-testid="reveal-screen">
       <div className="game-chrome">
         <span className="game-chrome__label" data-testid="reveal-progress">
-          {progress}
+          <ProgressDots total={round.order.length} current={round.revealIndex} />
+          <span>{progress}</span>
         </span>
         <GameMenu />
       </div>
 
       {!armed ? (
-        <PassTo name={player.name} method={effectiveMethod} onArmed={() => setArmed(true)} />
+        <PassTo name={player.name} avatar={avatar} method={effectiveMethod} onArmed={() => setArmed(true)} />
       ) : (
-        <div className="game-stack">
-          <SecretCard revealed={revealed} name={player.name}>
+        <div className="game-stack anim-fade-in">
+          <SecretCard
+            revealed={revealed}
+            name={player.name}
+            avatar={avatar}
+            mood={imposter ? 'sneaky' : 'happy'}
+            glow={imposter ? 'var(--danger)' : 'var(--accent)'}
+          >
             {imposter ? (
               <>
                 <div className="secret-word secret-word--imposter" data-testid="secret-imposter">
@@ -118,7 +131,7 @@ function RevealTurn({ player }: { player: Player }) {
                 variant="primary"
                 size="xl"
                 block
-                className={guarded ? 'is-guarded' : ''}
+                className={`anim-bounce-in ${guarded ? 'is-guarded' : ''}`.trim()}
                 disabled={guarded}
                 data-testid="reveal-pass"
                 onClick={() => {

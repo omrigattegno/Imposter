@@ -10,6 +10,7 @@
  *  - data-testid="confetti", data-state="idle" | "burst" | "static".
  */
 import { useEffect, useRef, useState } from 'react';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import './Confetti.css';
 
 export interface ConfettiProps {
@@ -23,7 +24,6 @@ export interface ConfettiProps {
 }
 
 const DEFAULT_COLORS = ['#ffc857', '#7cd6ff', '#ff7eb6', '#c9b6ff', '#5ee6a8', '#ff5c7a', '#ffe66d'];
-const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
 
 interface Piece {
   x: number;
@@ -38,29 +38,6 @@ interface Piece {
   phase: number;
   color: string;
   shape: 0 | 1 | 2; // rect, circle, strip
-}
-
-function prefersReducedMotion(): boolean {
-  try {
-    return typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia(REDUCED_MOTION).matches;
-  } catch {
-    return false;
-  }
-}
-
-function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(prefersReducedMotion);
-  useEffect(() => {
-    try {
-      const mq = window.matchMedia(REDUCED_MOTION);
-      const onChange = () => setReduced(mq.matches);
-      mq.addEventListener('change', onChange);
-      return () => mq.removeEventListener('change', onChange);
-    } catch {
-      return undefined;
-    }
-  }, []);
-  return reduced;
 }
 
 function makePieces(count: number, width: number, height: number, colors: string[]): Piece[] {

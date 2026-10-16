@@ -21,11 +21,21 @@ src/
   words/       word packs: en/*.json, he/*.json (static imports -> bundled, offline); index.ts; custom.ts (host packs,
                ids prefixed CUSTOM_PACK_PREFIX; cache invalidated on a cross-window 'storage' event)
   i18n/        messages.common.ts (shared), messages.pregame.ts, messages.game.ts; index.ts -> useT(), translate()
-  hooks/       useReveal (lift/hold controller), useWakeLock
-  lib/         sensors.ts (DeviceOrientation + permission), audio.ts (beep via WebAudio), pwa.ts
-  components/  shared: Button, TopBar, Segmented, Modal, InstallPrompt, GameMenu
+  avatars/     the twelve masked characters (DESIGN.md): core.ts (ids, AVATAR_COLORS, moods, Character contract),
+               parts.tsx (shared anatomy + <Person> composer), characters/<id>.tsx (one file per character, picked
+               up by registry.tsx via import.meta.glob), index.tsx -> <Avatar id mood animate unmasked size>,
+               AVATAR_IDS, AVATARS, isAvatarId; the root <svg> carries data-avatar / data-mood / data-unmasked
+  hooks/       useReveal (lift/hold controller), useWakeLock, useReducedMotion (prefers-reduced-motion as state)
+  lib/         sensors.ts (DeviceOrientation + permission), audio.ts (shared AudioContext, timer beep),
+               sfx.ts (synthesized cues playSfx(name) gated on settings.sounds + haptic(kind)), pwa.ts
+  components/  shared: Button (toy pill, plays 'tap' unless sfx={false}), TopBar, Segmented, Modal, Confetti,
+               InstallPrompt, GameMenu (bottom sheet)
+               pregame/: Logo, HeroScene, HowToArt, LiftIllustration, PlayerList, AvatarPicker (SET_AVATAR),
+               CategoryPicker, CustomPacks, SettingRow (+ OnOffSwitch), LanguageToggle, BackButton
+               game/: PassTo, SecretCard, HoldButton, RevealControls, TurnOrder, AvatarRing, SpeechBubble,
+               Scoreboard, PenaltyCard, Ring, ProgressDots, avatarOf (seat fallback for old snapshots)
   screens/     one file per screen; GameScreen.tsx switches on state.phase
-  styles/      tokens.css (design tokens), base.css
+  styles/      tokens.css (design tokens), base.css, motion.css (anim-* utilities), pregame.css, game.css
   nav.tsx      useNav(): screen stack for home/howto/setup/settings/game; keeps one History guard entry
                armed while the stack has more than one screen (platform Back pops a screen), nothing at the root
   App.tsx      keeps <html lang dir> in sync (useLayoutEffect; main.tsx sets them once at boot before the first
@@ -46,7 +56,9 @@ Phases: `setup -> reveal -> clues -> discussion -> vote -> [guess] -> results`.
 | guess | `guessingImposter(state)` types a guess | `SUBMIT_GUESS {guess}` -> results |
 | results | table; `round.outcome`, `scoreboard(state)` | `START_ROUND` (next round), `EDIT_PLAYERS` (-> setup, keeps scores), `END_GAME` (-> setup, clears scores/history/usedWords) |
 
-Other actions: `ADD_PLAYER/REMOVE_PLAYER/RENAME_PLAYER/REORDER_PLAYERS/SET_PLAYERS` (setup only),
+Other actions: `ADD_PLAYER/REMOVE_PLAYER/RENAME_PLAYER/REORDER_PLAYERS/SET_PLAYERS` (setup only; the store
+assigns each new player a free avatar with `nextFreeAvatar`), `SET_AVATAR {id, avatar}` (setup only; avatars are
+unique at the table, so taking another player's swaps the two),
 `UPDATE_SETTINGS {patch}` (any time; rule values are frozen into `round.config` at START_ROUND, so changes
 apply from the next round; `language`/`wordLanguage`/`revealMethod` apply immediately), `ABORT_ROUND` (-> setup, keeps scores),
 `LOAD {state}` (replaces the state; runs `upgradeState`). Removing a player is not lossy: `REMOVE_PLAYER` moves
@@ -106,5 +118,7 @@ No external fonts (offline): the system font stack is in tokens.css.
 - Run `npx tsc --noEmit` and `npx vitest run` before finishing. `npm run build` does typecheck + Vite build.
 - End-to-end: `npm run build && npx playwright test` (e2e/, mobile Chromium against `vite preview`). Screens
   and controls carry `data-testid` attributes (`home-play`, `setup-start`, `secret-card`, `hold-button`,
-  `ballot-opt`, ...); keep them when restyling. `npm run test:e2e:screenshots` captures review PNGs.
+  `ballot-opt`, `player-avatar` / `avatar-picker` / `avatar-opt` (with `data-avatar`, `data-taken`),
+  `settings-sounds-on|off`, `results-banner`, ...); keep them when restyling. The Results screen exposes
+  `data-stage` (0-2) for its opening sequence. `npm run test:e2e:screenshots` captures review PNGs.
 - Deps are installed; do not run `npm install` from parallel builders.

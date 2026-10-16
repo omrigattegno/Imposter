@@ -158,10 +158,8 @@ describe('Avatar', () => {
 });
 
 describe('cast', () => {
-  const OWNED = ['bean', 'bolt', 'bubble', 'cloud', 'dot', 'echo'] as const;
-
-  it('registers the first six characters (not placeholders)', () => {
-    for (const id of OWNED) {
+  it('registers all twelve characters (not placeholders), each with a custom touch', () => {
+    for (const id of AVATAR_IDS) {
       expect(isRegistered(id), id).toBe(true);
       const m = mount({ id });
       expect(m.svg().getAttribute('data-placeholder')).toBeNull();
@@ -169,13 +167,15 @@ describe('cast', () => {
     }
   });
 
-  it('marks ids whose file has not landed as placeholders, which still render fully', () => {
+  it('renders an unknown-file fallback as a placeholder that still has a mask', () => {
+    // Every id is registered now; the fallback path is kept for a character file that fails to load.
     for (const id of AVATAR_IDS) {
       if (isRegistered(id)) continue;
       const m = mount({ id });
       expect(m.svg().getAttribute('data-placeholder')).toBe('true');
       expect(mask(m)).toBeTruthy();
     }
+    expect(AVATAR_IDS.every((id) => isRegistered(id))).toBe(true);
   });
 
   it('every registered character uses its signature colour and a unique hair + headwear combo', () => {

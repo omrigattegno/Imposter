@@ -95,6 +95,7 @@ export function SettingsScreen() {
             <SettingRow className="anim-slide-up" label={t('settings.imposterSeesCategory')} hint={t('settings.imposterSeesCategoryHint')}>
               <OnOffSwitch
                 aria-label={t('settings.imposterSeesCategory')}
+                testId="settings-sees-category"
                 value={s.imposterSeesCategory}
                 onChange={(imposterSeesCategory) => patch({ imposterSeesCategory })}
               />
@@ -103,6 +104,7 @@ export function SettingsScreen() {
             <SettingRow className="anim-slide-up" label={t('settings.imposterGuess')} hint={t('settings.imposterGuessHint')}>
               <OnOffSwitch
                 aria-label={t('settings.imposterGuess')}
+                testId="settings-imposter-guess"
                 value={s.imposterGuess}
                 onChange={(imposterGuess) => patch({ imposterGuess })}
               />
@@ -187,6 +189,7 @@ export function SettingsScreen() {
             <SettingRow className="anim-slide-up" label={t('settings.sounds')} hint={t('settings.soundsHint')}>
               <OnOffSwitch
                 aria-label={t('settings.sounds')}
+                testId="settings-sounds"
                 value={s.sounds}
                 onChange={(sounds) => {
                   // Inside the tap, so the cues can sound right away on this screen too (WebAudio

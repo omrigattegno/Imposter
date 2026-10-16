@@ -12,6 +12,7 @@ import { useT } from '../../i18n';
 import { requestSensorPermission, type SensorPermission } from '../../lib/sensors';
 import { Button } from '../Button';
 import { HoldButton } from './HoldButton';
+import { IconLift, IconLower } from './icons';
 import '../../styles/game.css';
 
 export interface RevealControlsProps {
@@ -68,8 +69,15 @@ export function RevealControls({
         </>
       ) : (
         <>
-          <p className="reveal-controls__hint" data-testid="reveal-hint" data-hint={needsLower ? 'lower' : 'lift'}>
-            {needsLower ? t('reveal.lowerFirst') : liftHint}
+          <p
+            className={`reveal-controls__hint reveal-controls__hint--lift ${revealed ? 'is-lifted' : ''}`.trim()}
+            data-testid="reveal-hint"
+            data-hint={needsLower ? 'lower' : 'lift'}
+          >
+            <span className={`reveal-controls__glyph ${needsLower ? '' : 'reveal-controls__glyph--lift'}`.trim()} aria-hidden="true">
+              {needsLower ? <IconLower /> : <IconLift />}
+            </span>
+            <span>{needsLower ? t('reveal.lowerFirst') : liftHint}</span>
           </p>
           <Button
             variant="ghost"

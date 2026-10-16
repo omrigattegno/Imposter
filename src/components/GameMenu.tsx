@@ -1,5 +1,5 @@
 /**
- * In-round overflow menu: a "⋯" ghost button (TopBar trailing slot or a corner) that opens an action
+ * In-round overflow menu: a round "⋯" coin (TopBar trailing slot or a corner) that opens a bottom
  * sheet with "Home" (keeps the round; Home offers "Resume round n"), "Quit this round" (ABORT_ROUND ->
  * setup, scores kept) and "End game" (END_GAME -> home, scores cleared). The destructive actions are
  * confirmed in a Modal before they run.
@@ -69,6 +69,9 @@ export function GameMenu() {
             aria-label={t('common.menu')}
             onClick={(e) => e.stopPropagation()}
           >
+            <p className="sheet__title" aria-hidden="true">
+              {t('common.menu')}
+            </p>
             <Button block size="l" data-testid="game-menu-home" onClick={goHome}>
               {t('common.home')}
             </Button>
@@ -78,7 +81,7 @@ export function GameMenu() {
             <Button block size="l" variant="danger" data-testid="game-menu-end" onClick={() => setStage('end')}>
               {t('menu.endGame')}
             </Button>
-            <Button block variant="ghost" onClick={close}>
+            <Button block variant="ghost" className="sheet__cancel" onClick={close}>
               {t('common.cancel')}
             </Button>
           </div>

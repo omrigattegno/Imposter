@@ -1,11 +1,14 @@
 /**
- * Guess: the caught Imposter (guessingImposter) types one guess at the secret word.
+ * Guess: the caught Imposter (guessingImposter) types one guess at the secret word, under their own
+ * shocked, unmasked-to-be avatar and a "Caught!" sticker.
  * Submit -> SUBMIT_GUESS {guess}; "I give up" -> SUBMIT_GUESS {guess: ''}.
  */
 import { useState, type FormEvent } from 'react';
+import { Avatar } from '../avatars';
 import { Button } from '../components/Button';
 import { GameMenu } from '../components/GameMenu';
 import { TopBar } from '../components/TopBar';
+import { useAvatars } from '../components/game/avatarOf';
 import { guessingImposter } from '../game/engine';
 import { useGame } from '../game/store';
 import { useT } from '../i18n';
@@ -14,6 +17,7 @@ import '../styles/game.css';
 export function GuessScreen() {
   const t = useT();
   const { state, dispatch } = useGame();
+  const avatarOf = useAvatars();
   const [guess, setGuess] = useState('');
   const round = state.round;
   const imposter = guessingImposter(state);
@@ -30,10 +34,17 @@ export function GuessScreen() {
   const giveUp = () => dispatch({ type: 'SUBMIT_GUESS', guess: '' });
 
   return (
-    <main className="screen guess" data-testid="guess-screen">
+    <main className="screen guess anim-screen-enter" data-testid="guess-screen">
       <TopBar title={t('common.round', { n: round.number })} trailing={<GameMenu />} />
       <div className="game-stack">
-        <h2 className="guess__title">{t('guess.title')}</h2>
+        <div className="guess__hero">
+          <div className="guess__avatar anim-shake anim-delay-2">
+            <div className="anim-pop-in">
+              <Avatar id={avatarOf(imposter.id)} size={128} mood="shocked" />
+            </div>
+          </div>
+          <h2 className="guess__title anim-bounce-in anim-delay-2">{t('guess.title')}</h2>
+        </div>
         <p className="guess__prompt">{t('guess.prompt', { name: imposter.name })}</p>
         {round.config.imposterSeesCategory ? (
           <p className="guess__category" data-testid="guess-category">

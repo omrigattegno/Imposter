@@ -41,16 +41,20 @@ type OnOff = 'on' | 'off';
 export function OnOffSwitch({
   value,
   onChange,
+  testId,
   'aria-label': ariaLabel,
 }: {
   value: boolean;
   onChange: (next: boolean) => void;
+  /** When set, the options get data-testid="{testId}-off" / "{testId}-on". */
+  testId?: string;
   'aria-label'?: string;
 }) {
   const t = useT();
   return (
     <Segmented<OnOff>
       aria-label={ariaLabel}
+      testId={testId}
       className="segmented--switch"
       value={value ? 'on' : 'off'}
       options={[

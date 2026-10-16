@@ -29,6 +29,7 @@ const en = {
   'clues.order': 'Turn order',
   'clues.startDiscussion': 'Start discussion',
   'clues.goToVote': 'Go to vote',
+  'clues.speaking': 'Speaking',
 
   // Discussion
   'discussion.title': 'Discussion',
@@ -87,6 +88,8 @@ const en = {
   'results.leader': 'Leader',
   'results.nextRound': 'Next round',
   'results.endGame': 'End game',
+  'results.unmasked': 'Unmasked!',
+  'results.tableLabel': 'The table',
 
   // Penalties
   'penalty.dareTitle': 'Dare for the losing side',
@@ -121,6 +124,7 @@ const he: Record<keyof typeof en, string> = {
   'clues.order': 'סדר התורות',
   'clues.startDiscussion': 'לפתוח דיון',
   'clues.goToVote': 'להצבעה',
+  'clues.speaking': 'מדבר/ת',
 
   'discussion.title': 'דיון',
   'discussion.hint': 'מי מבלף? דברו על זה.',
@@ -175,6 +179,8 @@ const he: Record<keyof typeof en, string> = {
   'results.leader': 'מוביל/ה',
   'results.nextRound': 'סיבוב הבא',
   'results.endGame': 'סיום משחק',
+  'results.unmasked': 'המסכה ירדה!',
+  'results.tableLabel': 'השולחן',
 
   'penalty.dareTitle': 'אתגר לצד המפסיד',
   'penalty.drinkTitle': 'לגימה לצד המפסיד',

@@ -1,5 +1,10 @@
-/** Big press-and-hold button; spread `holdProps` from useReveal() on it (press shows, release hides). */
+/**
+ * Big press-and-hold "toy" button; spread `holdProps` from useReveal() on it (press shows, release
+ * hides). The eye glyph opens while the secret shows. Children get pointer-events: none (game.css) so
+ * every pointer event targets the button itself, which holds the pointer capture.
+ */
 import type { HTMLAttributes, ReactNode } from 'react';
+import { IconEye } from './icons';
 import '../../styles/game.css';
 
 export interface HoldButtonProps {
@@ -18,7 +23,10 @@ export function HoldButton({ holdProps, active, children }: HoldButtonProps) {
       aria-pressed={active}
       data-testid="hold-button"
     >
-      {children}
+      <span className="hold-btn__icon" aria-hidden="true">
+        <IconEye open={active} />
+      </span>
+      <span className="hold-btn__label">{children}</span>
     </button>
   );
 }

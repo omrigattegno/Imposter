@@ -17,8 +17,10 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  */
 export function Button({ variant = 'secondary', size = 'm', block = false, sfx = 'tap', className = '', onClick, ...rest }: ButtonProps) {
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
-    if (sfx) playSfx(sfx);
+    // The handler runs first: a tap that unlocks audio (Setup's Start calls unlockAudio()) then hears
+    // its own cue instead of playing it a moment too early into a still-locked context.
     onClick?.(e);
+    if (sfx) playSfx(sfx);
   };
   return (
     <button

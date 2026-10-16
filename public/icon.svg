@@ -3,69 +3,84 @@
     Imposter app icon: the source of truth, hand-drawn. `npm run icons` (scripts/render-icon.mjs) copies it to
     favicon.svg and screenshots the PNG set with the preinstalled Playwright Chromium.
 
-    The mascot uses the avatar cast's anatomy (src/avatars/parts.tsx, 120x120 space, scaled 4.4x): round head
-    with ears, big eyes with highlights seen through the winged domino mask in the accent yellow (#FFC857),
-    rosy cheeks, a cheeky smirk, thick ink (#1B1F3B) outlines, flat fills. Night-blue tile (#141a33, tokens.css
-    --bg) with a soft warm halo. Reads at 48px: head 30px, eyes 8px.
+    The mascot is Bolt from the avatar cast (src/avatars/characters/bolt.tsx, drawn with the shared anatomy of
+    src/avatars/parts.tsx in its 120x120 space, scaled 4.6x and cropped to the head): brown skin, squared head,
+    electric-blue mohawk, lightning earring, big eyes with highlights seen through the winged domino mask in the
+    accent yellow (#FFC857, tokens.css accent), rosy cheeks, a sneaky smirk, thick ink (#1B1F3B, tokens.css ink)
+    outlines, flat fills. Night-blue tile (#141a33, tokens.css bg) with a soft warm halo and three sparkles.
+    Reads at 48px: head 31px, eyes 8px, the mask a clear yellow band.
 
-    Hooks the rasteriser relies on: #bg (the tile; rx is zeroed for the square variants) and #art (face +
-    sparkles; its transform is "translate(256 256) scale(k)", k < 1 for the maskable variant).
+    Hooks the rasteriser relies on (do not rename):
+      #bg and #bg-clip  the tile and its clip; rx is 112 (22%) for the rounded "any" PNGs, 0 for the square ones
+      #art              face + sparkles; transform is "translate(256 256) scale(k)", k = 0.8 for the maskable
+                        variant so everything stays inside the 80% safe zone
   -->
   <title>Imposter</title>
   <defs>
-    <radialGradient id="halo" gradientUnits="userSpaceOnUse" cx="256" cy="240" r="240">
-      <stop offset="0" stop-color="#ffc857" stop-opacity=".34"/>
-      <stop offset=".6" stop-color="#ffc857" stop-opacity=".12"/>
+    <radialGradient id="halo" gradientUnits="userSpaceOnUse" cx="256" cy="236" r="236">
+      <stop offset="0" stop-color="#ffc857" stop-opacity=".36"/>
+      <stop offset=".55" stop-color="#ffc857" stop-opacity=".13"/>
       <stop offset="1" stop-color="#ffc857" stop-opacity="0"/>
     </radialGradient>
+    <clipPath id="tile">
+      <rect id="bg-clip" width="512" height="512" rx="112"/>
+    </clipPath>
+    <path id="sparkle" d="M0 -1 C.18 -.32 .32 -.18 1 0 C.32 .18 .18 .32 0 1 C-.18 .32 -.32 .18 -1 0 C-.32 -.18 -.18 -.32 0 -1 Z"/>
   </defs>
   <rect id="bg" width="512" height="512" rx="112" fill="#141a33"/>
-  <circle cx="256" cy="240" r="240" fill="url(#halo)"/>
-  <g id="art" transform="translate(256 256)">
-    <g id="sparkles" fill="#ffe66d" opacity=".9">
-      <path transform="translate(148 -164) scale(15)" d="M0 -1 C.18 -.32 .32 -.18 1 0 C.32 .18 .18 .32 0 1 C-.18 .32 -.32 .18 -1 0 C-.32 -.18 -.18 -.32 0 -1 Z"/>
-      <path transform="translate(-158 -136) scale(9)" d="M0 -1 C.18 -.32 .32 -.18 1 0 C.32 .18 .18 .32 0 1 C-.18 .32 -.32 .18 -1 0 C-.32 -.18 -.18 -.32 0 -1 Z"/>
-      <path transform="translate(180 142) scale(8)" d="M0 -1 C.18 -.32 .32 -.18 1 0 C.32 .18 .18 .32 0 1 C-.18 .32 -.32 .18 -1 0 C-.32 -.18 -.18 -.32 0 -1 Z"/>
-    </g>
-    <g id="face" transform="scale(4.4) translate(-60 -54)" stroke="#1B1F3B" stroke-linejoin="round" stroke-linecap="round">
-      <!-- ears, then the head over their inner halves -->
-      <circle cx="25" cy="60" r="7" fill="#BC7E58" stroke-width="5"/>
-      <circle cx="95" cy="60" r="7" fill="#BC7E58" stroke-width="5"/>
-      <circle cx="60" cy="56" r="36" fill="#BC7E58" stroke-width="6"/>
-      <!-- cheeks -->
-      <g fill="#FF8FAE" opacity=".75" stroke="none">
-        <ellipse cx="40" cy="72" rx="7" ry="4.5"/>
-        <ellipse cx="80" cy="72" rx="7" ry="4.5"/>
+  <g clip-path="url(#tile)">
+    <circle cx="256" cy="236" r="236" fill="url(#halo)"/>
+    <g id="art" transform="translate(256 256)">
+      <g id="sparkles">
+        <use href="#sparkle" transform="translate(160 -158) scale(15)" fill="#ffe66d" opacity=".95"/>
+        <use href="#sparkle" transform="translate(-178 -128) scale(9)" fill="#7cd6ff" opacity=".9"/>
+        <use href="#sparkle" transform="translate(-186 152) scale(8)" fill="#ffe66d" opacity=".85"/>
       </g>
-      <!-- nose, smirk -->
-      <path d="M56 62 Q60 68 64 62" fill="none" stroke-width="4"/>
-      <path d="M50 78 Q61 86 71 73" fill="none" stroke-width="4.5"/>
-      <!-- the winged domino mask -->
-      <path d="M60 50 C54 43, 44 41, 34 43 C25 45, 15 47, 17 54 C19 64, 31 71, 42 70 C51 69, 57 65, 60 61 C63 65, 69 69, 78 70 C89 71, 101 64, 103 54 C105 47, 95 45, 86 43 C76 41, 66 43, 60 50 Z" fill="#FFC857" stroke-width="5"/>
-      <!-- eyes: skin discs are the mask's holes, then big eyes with highlights -->
-      <g fill="#BC7E58" stroke="none">
-        <circle cx="45" cy="56" r="11.5"/>
-        <circle cx="75" cy="56" r="11.5"/>
+      <g id="face" transform="scale(4.6) translate(-60 -50)" stroke="#1B1F3B" stroke-linejoin="round" stroke-linecap="round">
+        <!-- ears, then the squared head over their inner halves -->
+        <circle cx="25" cy="60" r="7" fill="#8E5A3B" stroke-width="5"/>
+        <circle cx="95" cy="60" r="7" fill="#8E5A3B" stroke-width="5"/>
+        <rect x="24" y="20" width="72" height="72" rx="26" fill="#8E5A3B" stroke-width="6"/>
+        <!-- cheeks -->
+        <g fill="#FF8FAE" opacity=".75" stroke="none">
+          <ellipse cx="40" cy="72" rx="7" ry="4.5"/>
+          <ellipse cx="80" cy="72" rx="7" ry="4.5"/>
+        </g>
+        <!-- nose, sneaky smirk -->
+        <path d="M56 62 Q60 68 64 62" fill="none" stroke-width="4"/>
+        <path d="M52 79 Q61 84 69 74" fill="none" stroke-width="4.5"/>
+        <!-- the winged domino mask in the accent yellow -->
+        <path d="M60 50 C54 43, 44 41, 34 43 C25 45, 15 47, 17 54 C19 64, 31 71, 42 70 C51 69, 57 65, 60 61 C63 65, 69 69, 78 70 C89 71, 101 64, 103 54 C105 47, 95 45, 86 43 C76 41, 66 43, 60 50 Z" fill="#FFC857" stroke-width="5"/>
+        <!-- eyes: skin discs are the mask's holes, then big white eyes with highlights -->
+        <g fill="#8E5A3B" stroke="none">
+          <circle cx="45" cy="56" r="11.5"/>
+          <circle cx="75" cy="56" r="11.5"/>
+        </g>
+        <g fill="#FFFFFF" stroke-width="4">
+          <circle cx="45" cy="56" r="9.5"/>
+          <circle cx="75" cy="56" r="9.5"/>
+        </g>
+        <g stroke="none">
+          <circle cx="46" cy="57" r="5" fill="#1B1F3B"/>
+          <circle cx="76" cy="57" r="5" fill="#1B1F3B"/>
+          <circle cx="47.8" cy="55.2" r="2.1" fill="#FFFFFF"/>
+          <circle cx="77.8" cy="55.2" r="2.1" fill="#FFFFFF"/>
+          <circle cx="44.2" cy="58.8" r="1" fill="#FFFFFF" opacity=".8"/>
+          <circle cx="74.2" cy="58.8" r="1" fill="#FFFFFF" opacity=".8"/>
+        </g>
+        <!-- brows: one raised, one flat (the sneaky look) -->
+        <g fill="none" stroke-width="4.5">
+          <path d="M37 37 Q45 31 53 37"/>
+          <path d="M68 45 Q75 43 82 45"/>
+        </g>
+        <!-- electric-blue mohawk -->
+        <path d="M37 31 L44 6 L52 20 L60 2 L68 20 L76 6 L83 31 Q60 24 37 31 Z" fill="#3D7BFF" stroke-width="5"/>
+        <!-- lightning earring -->
+        <g fill="none">
+          <path d="M98 66 L94 72 L99 72 L96 79" stroke-width="6"/>
+          <path d="M98 66 L94 72 L99 72 L96 79" stroke="#FFC857" stroke-width="2.5"/>
+        </g>
       </g>
-      <g fill="#FFFFFF" stroke-width="4">
-        <circle cx="45" cy="56" r="9.5"/>
-        <circle cx="75" cy="56" r="9.5"/>
-      </g>
-      <g stroke="none">
-        <circle cx="46" cy="57" r="5" fill="#1B1F3B"/>
-        <circle cx="76" cy="57" r="5" fill="#1B1F3B"/>
-        <circle cx="47.8" cy="55.2" r="2.1" fill="#FFFFFF"/>
-        <circle cx="77.8" cy="55.2" r="2.1" fill="#FFFFFF"/>
-        <circle cx="44.2" cy="58.8" r="1" fill="#FFFFFF" opacity=".8"/>
-        <circle cx="74.2" cy="58.8" r="1" fill="#FFFFFF" opacity=".8"/>
-      </g>
-      <!-- brows -->
-      <g fill="none" stroke-width="4.5">
-        <path d="M37 43 Q45 38 53 42"/>
-        <path d="M67 42 Q75 38 83 43"/>
-      </g>
-      <!-- hair: short pink cap -->
-      <path d="M26 54 C23 30, 38 15, 60 15 C82 15, 97 30, 94 54 C92 42, 86 33, 78 31 C72 29.5, 66 32, 60 31 C54 32, 48 29.5, 42 31 C34 33, 28 42, 26 54 Z" fill="#FF5CA8" stroke-width="5"/>
     </g>
   </g>
 </svg>
